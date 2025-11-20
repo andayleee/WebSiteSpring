@@ -1,13 +1,14 @@
-package ru.andayleee.website;
+package ru.andayleee.website.controllers;
 
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
 
-@RestController
+@Controller
 public class HomeController {
     @GetMapping("/")
-    public String home() {
-        return "🚀 Hello from Spring Boot! Server: " + java.time.LocalDateTime.now();
+    public String home(Model model) {
+        return "home";
     }
 
     @GetMapping("/api/hello")
