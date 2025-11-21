@@ -14,6 +14,10 @@ body {
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
+.main-header {
+    background-color: #000;
+}
+
 @media (max-width: 480px) {
     body {
         padding: 15px;

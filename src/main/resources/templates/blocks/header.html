@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+</head>
+<body>
+<header th:fragment="header" class="main-header">
+  <nav class="navbar">
+    <div class="logo">
+      <a th:href="@{/}">Мой Сайт</a>
+    </div>
+    <ul class="nav-links">
+      <li><a th:href="@{/}">Главная</a></li>
+      <li><a th:href="@{/about}">О нас</a></li>
+      <li><a th:href="@{/contact}">Контакты</a></li>
+    </ul>
+  </nav>
+</header>
+</body>
+</html>
