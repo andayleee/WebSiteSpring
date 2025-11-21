@@ -8,7 +8,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class HomeController {
     @GetMapping("/")
     public String home(Model model) {
+        model.addAttribute("activePage", "home");
         return "home";
+    }
+
+    @GetMapping("/account")
+    public String account(Model model) {
+        model.addAttribute("activePage", "account");
+        return "account";
     }
 
     @GetMapping("/api/hello")
