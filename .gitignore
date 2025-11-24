@@ -19,6 +19,18 @@ target/
 *.iml
 *.ipr
 
+# Environment variables
+.env
+*.env
+
+# Logs
+logs/
+*.log
+
+# IDE
+.vscode/
+.idea/
+
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
