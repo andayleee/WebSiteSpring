@@ -30,6 +30,26 @@
   </div>
   <div class="d-none d-md-block col-md-2 px-0"></div>
 </div>
+<div class="row mx-0">
+<table>
+      <thead>
+      <tr>
+        <th>Название блока</th>
+        <th>Описание</th>
+        <th>Продолжительность</th>
+      </tr>
+      </thead>
+      <tbody>
+      <form th:action="${'/'}">
+        <tr th:each="el : ${User}">
+          <td><h3 th:text="${el.getId()}"></h3></td>
+          <td><h3 th:text="${el.getEmail()}"></h3></td>
+          <td><h3 th:text="${el.getName()}"></h3></td>
+        </tr>
+      </form>
+      </tbody>
+    </table>
+</div>
 <script th:src="@{/js/homeScript.js}"></script>
 </body>
 </html>

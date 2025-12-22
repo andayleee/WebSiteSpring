@@ -45,3 +45,6 @@ build/
 .vscode/
 sshKey
 sshKey.pub
+
+docker-compose.override.yml
+
