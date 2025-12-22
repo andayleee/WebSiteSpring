@@ -22,7 +22,7 @@
 <div class="row mx-0">
   <div class="d-none d-md-block col-md-2 px-0"></div>
   <div class="col-12 col-md-8 px-0">
-    <div class="container px-3">
+    <div class="container px-3 mb-3">
       <h1>Главная Страница</h1>
       <h2>Тестовый сайт с выводом БД</h2>
       <p>БД на Postgres, приложение на Spring Framework. Ниже вывод данных с таблицы Users</p>
@@ -38,7 +38,8 @@
       <tbody>
       <form th:action="${'/'}">
         <tr th:each="el : ${User}">
-          <td scope="row"><h3 th:text="${el.getId()}"></h3></td>
+          <td scope="row"><h3 th:text="${el.getId()}"></h3>
+          <div class="col-3 d-flex justify-content-center align-items-center"></td>
           <td><h3 th:text="${el.getEmail()}"></h3></td>
           <td><h3 th:text="${el.getName()}"></h3></td>
         </tr>

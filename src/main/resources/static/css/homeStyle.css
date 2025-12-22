@@ -4,7 +4,7 @@
   --headerBg: rgba(44, 62, 80, 0.5);
   --text: #333333;
   --accent1: #a24ecc79;
-  --accent2: #4ECCA3;
+  --accent2: #0c6efd;
   --accent3:#cc4e77;
   --heading: #1A1A40;
   --shadow: rgba(0,0,0,0.1);
@@ -74,6 +74,15 @@ body {
     text-decoration: none;
     font-size: 1.5rem;
     font-weight: bold;
+}
+
+.avatar-hover {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.avatar-hover:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
 }
 
 @media (max-width: 480px) {

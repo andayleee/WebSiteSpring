@@ -19,14 +19,22 @@ public class User {
     private String password;
 
     @Column(nullable = false)
+    private String description;
+
+    @Column(nullable = false)
+    private String photoPath = "/images/avatars/VoidAvatar.png";
+
+    @Column(nullable = false)
     private String role;
 
     // Конструкторы
     public User() {}
-    public User(String email, String name, String password, String role) {
+    public User(String email, String name, String password, String description, String photoPath, String role) {
         this.email = email;
         this.name = name;
         this.password = password;
+        this.description = description;
+        this.photoPath = photoPath;
         this.role = role;
     }
 
@@ -38,6 +46,10 @@ public class User {
     public void setName(String name) { this.name = name; }
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+    public String getPhotoPath() { return photoPath; }
+    public void setPhotoPath(String photoPath) { this.photoPath = photoPath; }
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
 }
