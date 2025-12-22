@@ -15,11 +15,19 @@ public class User {
     @Column(nullable = false)
     private String name;
 
+    @Column(nullable = false)
+    private String password;
+
+    @Column(nullable = false)
+    private String role;
+
     // Конструкторы
     public User() {}
-    public User(String email, String name) {
+    public User(String email, String name, String password, String role) {
         this.email = email;
         this.name = name;
+        this.password = password;
+        this.role = role;
     }
 
     // Геттеры и сеттеры
@@ -28,4 +36,8 @@ public class User {
     public void setEmail(String email) { this.email = email; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
 }

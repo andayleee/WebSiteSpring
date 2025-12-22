@@ -1,22 +1,48 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<header class="d-flex justify-content-center py-3 main-header" th:fragment="header">
-  <ul class="nav nav-pills">
-    <li class="nav-item">
-      <a th:href="@{/}" 
-         class="nav-link" 
-         th:classappend="${activePage == 'home'} ? 'active' : ''"
-         th:attr="aria-current=${activePage == 'home'} ? 'page' : ''">
-        Главная
-      </a>
-    </li>
-    <li class="nav-item">
-      <a th:href="@{/account}" 
-         class="nav-link"
-         th:classappend="${activePage == 'account'} ? 'active' : ''"
-         th:attr="aria-current=${activePage == 'account'} ? 'page' : ''">
-        Аккаунт
-      </a>
-    </li>
-  </ul>
-</header>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<div th:fragment="header">
+  <div class="d-flex justify-content-between align-items-center py-3 main-header">
+    
+    <!-- Левое меню -->
+    <div class="col-10">
+      <ul class="d-flex justify-content-center nav nav-pills">
+        <!-- Главная всегда видна -->
+        <li class="nav-item">
+          <a th:href="@{/}" class="nav-link"
+             th:classappend="${activePage == 'home'} ? 'active' : ''"
+             th:attr="aria-current=${activePage == 'home'} ? 'page' : ''">Главная</a>
+        </li>
+
+        <!-- Аккаунт виден только авторизованным -->
+        <li sec:authorize="isAuthenticated()" class="nav-item">
+          <a th:href="@{/account}" class="nav-link"
+             th:classappend="${activePage == 'account'} ? 'active' : ''"
+             th:attr="aria-current=${activePage == 'account'} ? 'page' : ''">Аккаунт</a>
+        </li>
+
+        <!-- Админка видна только пользователям с ролью ADMIN -->
+        <li sec:authorize="hasRole('ADMIN')" class="nav-item">
+          <a th:href="@{/admin}" class="nav-link"
+             th:classappend="${activePage == 'admin'} ? 'active' : ''"
+             th:attr="aria-current=${activePage == 'admin'} ? 'page' : ''">Админка</a>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Правая часть: кнопка логина или выход -->
+    <div class="col-2 d-flex justify-content-end align-items-center">
+      <!-- Войти / Регистрация для неавторизованных -->
+      <a sec:authorize="isAnonymous()" th:href="@{/login}" class="btn btn-primary me-2">Войти</a>
+
+      <!-- Кнопка выхода для авторизованных -->
+      <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" class="btn me-2">
+        <button type="submit" class="btn btn-secondary">Выйти</button>
+      </form>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>
