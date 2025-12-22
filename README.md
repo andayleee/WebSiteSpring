@@ -3,9 +3,17 @@
 
 ./mvnw clean package  - пересборка JAR файла для сервера
 
-scp target/website-0.0.1-SNAPSHOT.jar root@{АЙПИ СЕРВЕРА}:/opt/mysite/ - отправка на сервер
+scp target/website-0.0.1-SNAPSHOT.jar root@{АЙПИ СЕРВЕРА}:/opt/mysite/ - отправка на сервер спринга
+
+scp docker-compose.yml .env root@{АЙПИ СЕРВЕРА}:/opt/mysite/ - отправка env и docker (наверное не надо каждый раз)
 
 ### После на сервере:
+
+cd /opt/mysite
+
+docker compose down -v - сброс образа
+
+docker compose up -d - запуск образа
 
 sudo systemctl reload nginx - перезагрузка nginx
 
