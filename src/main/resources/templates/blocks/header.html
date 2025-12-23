@@ -10,23 +10,23 @@
     <div class="col-10">
       <ul class="d-flex justify-content-center nav nav-pills">
         <!-- Главная всегда видна -->
-        <li class="nav-item">
-          <a th:href="@{/}" class="nav-link text-dark"
-             th:classappend="${activePage == 'home'} ? 'active' : ''"
+        <li class="nav-item me-2">
+          <a th:href="@{/}" class="nav-link text-light avatar-hover"
+             th:classappend="${activePage == 'home'} ? 'bg-secondary' : ''"
              th:attr="aria-current=${activePage == 'home'} ? 'page' : ''">Главная</a>
         </li>
 
         <!-- Аккаунт виден только авторизованным -->
-        <li sec:authorize="isAuthenticated()" class="nav-item">
-          <a th:href="@{/account}" class="nav-link text-dark"
-             th:classappend="${activePage == 'account'} ? 'active' : ''"
+        <li sec:authorize="isAuthenticated()" class="nav-item me-2">
+          <a th:href="@{/account}" class="nav-link text-light avatar-hover"
+             th:classappend="${activePage == 'account'} ? 'bg-secondary' : ''"
              th:attr="aria-current=${activePage == 'account'} ? 'page' : ''">Аккаунт</a>
         </li>
 
         <!-- Админка видна только пользователям с ролью ADMIN -->
         <li sec:authorize="hasRole('ADMIN')" class="nav-item">
-          <a th:href="@{/admin}" class="nav-link text-dark"
-             th:classappend="${activePage == 'admin'} ? 'active' : ''"
+          <a th:href="@{/admin}" class="nav-link text-light avatar-hover"
+             th:classappend="${activePage == 'admin'} ? 'bg-secondary' : ''"
              th:attr="aria-current=${activePage == 'admin'} ? 'page' : ''">Админка</a>
         </li>
       </ul>
@@ -35,11 +35,11 @@
     <!-- Правая часть: кнопка логина или выход -->
     <div class="col-2 d-flex justify-content-end align-items-center">
       <!-- Войти / Регистрация для неавторизованных -->
-      <a sec:authorize="isAnonymous()" th:href="@{/login}" class="btn btn-neutral me-2">Войти</a>
+      <a sec:authorize="isAnonymous()" th:href="@{/login}" class="btn btn-neutral bg-dark text-light me-2 avatar-hover">Войти</a>
 
       <!-- Кнопка выхода для авторизованных -->
       <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" class="btn me-2">
-        <button type="submit" class="btn btn-neutral">Выйти</button>
+        <button type="submit" class="btn btn-neutral bg-dark text-light avatar-hover">Выйти</button>
       </form>
     </div>
 

@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Страница загружена!');
     const button = document.getElementById('myButton');
     if (button) {
         button.addEventListener('click', function() {

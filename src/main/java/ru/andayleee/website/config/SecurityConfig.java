@@ -9,19 +9,24 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 public class SecurityConfig {
-    //  @Bean
-    // public PasswordEncoder passwordEncoder() {
-    //     return new BCryptPasswordEncoder();
-    // }
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+            .csrf(csrf -> csrf
+                .ignoringRequestMatchers("/register") // отключаем CSRF для регистрации
+            )
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                    "/",              // главная
-                    "/login",          // страница логина
-                    "/css/**",         // статика
+                    "/",              
+                    "/registration", 
+                    "/register",
+                    "/login",          
+                    "/css/**",         
                     "/js/**",
                     "/images/**"
                 ).permitAll()
