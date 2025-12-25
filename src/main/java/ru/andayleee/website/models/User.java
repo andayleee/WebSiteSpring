@@ -1,6 +1,10 @@
 package ru.andayleee.website.models;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "users")
@@ -10,15 +14,18 @@ public class User {
     private Long id;
 
     @Column(nullable = false, unique = true)
+    @Size(max = 250, message = "Email не должен превышать 250 символов")
     private String email;
 
     @Column(nullable = false)
+    @Size(max = 250, message = "Имя не должно превышать 250 символов")
     private String name;
 
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false, length = 1000)
+    @Column(nullable = true, length = 1000)
+    @Size(max = 1000, message = "Описание не должно превышать 1000 символов")
     private String description;
 
     @Column(nullable = false)
@@ -26,6 +33,9 @@ public class User {
 
     @Column(nullable = false)
     private String role;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Post> posts = new ArrayList<>();
 
     // Конструкторы
     public User() {}

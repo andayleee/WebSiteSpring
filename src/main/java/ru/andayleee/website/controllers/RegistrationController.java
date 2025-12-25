@@ -68,7 +68,7 @@ public class RegistrationController {
         user.setEmail(registerRequest.getEmail());
         user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
         user.setRole("ROLE_USER");
-        user.setDescription("Привет, мир!");
+        user.setDescription("");
         userRepository.save(user);
 
         // 4. После успешной регистрации — на логин
