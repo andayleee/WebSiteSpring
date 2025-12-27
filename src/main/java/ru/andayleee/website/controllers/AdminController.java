@@ -7,7 +7,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartFile;
+
+import ru.andayleee.website.config.UploadProperties;
 import ru.andayleee.website.models.MainPageItem;
 import ru.andayleee.website.repositories.MainPageItemRepository;
 
@@ -24,7 +27,8 @@ public class AdminController {
     @Autowired
     private MainPageItemRepository mainPageItemRepository;
 
-    private final String uploadDir = "/images/mainPageItem/";
+    @Autowired
+    private UploadProperties uploadProperties;
 
     @GetMapping("/admin/page")
     public String adminPage(Model model) {
@@ -40,26 +44,30 @@ public class AdminController {
                         @RequestParam("description") String description) throws IOException {
 
         if (photo != null && !photo.isEmpty()) {
+            // Проверяем размер файла (максимум 10MB)
+            if (photo.getSize() > 10 * 1024 * 1024) {
+                throw new MaxUploadSizeExceededException(10 * 1024 * 1024);
+            }
+
             // Создаём уникальное имя файла
             String filename = UUID.randomUUID() + "_" + photo.getOriginalFilename();
 
-            // Путь к папке для mainPageItem
-            Path uploadPath = Paths.get("src/main/resources/static/images/mainPageItem/" + filename);
+            // Путь к папке для mainPageItem через UploadProperties
+            Path uploadDir = Paths.get(uploadProperties.getBasePath(), "images", "mainPageItem");
+            Files.createDirectories(uploadDir); // создаём директорию, если её нет
 
-            // Создаём директорию, если её нет
-            Files.createDirectories(uploadPath.getParent());
+            Path uploadPath = uploadDir.resolve(filename); // полный путь к файлу
+            Files.write(uploadPath, photo.getBytes()); // сохраняем файл на диск
 
-            // Записываем файл на диск
-            Files.write(uploadPath, photo.getBytes());
-
-            // Создаём объект MainPageItem и сохраняем путь в БД
+            // Создаём объект MainPageItem и сохраняем путь для отображения
             MainPageItem item = new MainPageItem();
-            item.setPhotoPath("/images/mainPageItem/" + filename);
+            item.setPhotoPath("/images/mainPageItem/" + filename); // путь, который будет использоваться в Thymeleaf
             item.setTitle(title);
             item.setDescription(description);
 
             mainPageItemRepository.save(item);
         }
+
 
         return "redirect:/admin/page";
     }

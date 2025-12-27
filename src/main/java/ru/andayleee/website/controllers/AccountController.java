@@ -24,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import jakarta.validation.Valid;
 
 import ru.andayleee.website.models.User;
+import ru.andayleee.website.config.UploadProperties;
 import ru.andayleee.website.repositories.UserRepository;
 
 @Controller
@@ -31,6 +32,9 @@ public class AccountController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private UploadProperties uploadProperties;
 
     @GetMapping("/account")
     public String account(Model model) {
@@ -81,7 +85,7 @@ public class AccountController {
         user.setEmail(updatedUser.getEmail());
         user.setDescription(updatedUser.getDescription());
 
-        // Загрузка фото
+        // --- Загрузка фото ---
         try {
             if (photo != null && !photo.isEmpty()) {
                 if (photo.getSize() > 10 * 1024 * 1024) { // 10MB
@@ -89,10 +93,16 @@ public class AccountController {
                 }
 
                 String filename = UUID.randomUUID() + "_" + photo.getOriginalFilename();
-                Path uploadPath = Paths.get("src/main/resources/static/images/avatars/" + filename);
-                Files.createDirectories(uploadPath.getParent());
+
+                // Используем путь из UploadProperties
+                Path uploadPath = Paths.get(uploadProperties.getBasePath(), "images", "avatars", filename);
+
+                Files.createDirectories(uploadPath.getParent()); // создаём директории если их нет
                 Files.write(uploadPath, photo.getBytes());
-                user.setPhotoPath("/images/avatars/" + filename);
+
+                // Сохраняем путь для отображения в HTML
+                String relativePath = "/images/avatars/" + filename; 
+                user.setPhotoPath(relativePath);
             }
         } catch (MaxUploadSizeExceededException e) {
             model.addAttribute("user", user);
