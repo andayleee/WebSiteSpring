@@ -1,12 +1,23 @@
 package ru.andayleee.website.controllers;
 
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
+import javax.imageio.ImageIO;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,11 +31,19 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort; 
+import org.springframework.data.domain.Page;
 
 import jakarta.validation.Valid;
-
+import net.coobird.thumbnailator.Thumbnails;
+import ru.andayleee.website.models.Comment;
+import ru.andayleee.website.models.Post;
 import ru.andayleee.website.models.User;
 import ru.andayleee.website.config.UploadProperties;
+import ru.andayleee.website.repositories.CommentRepository;
+import ru.andayleee.website.repositories.PostRepository;
 import ru.andayleee.website.repositories.UserRepository;
 
 @Controller
@@ -34,7 +53,43 @@ public class AccountController {
     private UserRepository userRepository;
 
     @Autowired
+    private PostRepository postRepository;
+
+    @Autowired
+    private CommentRepository commentRepository;
+
+    @Autowired
     private UploadProperties uploadProperties;
+
+    private static final int POST_PAGE_SIZE = 3;
+    private static final int COMMENT_PAGE_SIZE = 3;
+
+    //Метод для вывода времени
+    private Map<Long, String> calculatePostTimes(List<Post> posts) {
+        Map<Long, String> postTimes = new HashMap<>();
+        LocalDateTime now = LocalDateTime.now();
+
+        for (Post post : posts) {
+            Duration duration = Duration.between(post.getCreatedAt(), now);
+            String formatted;
+
+            if (duration.toMinutes() < 1) {
+                formatted = "только что";
+            } else if (duration.toHours() < 1) {
+                formatted = duration.toMinutes() + " мин назад";
+            } else if (duration.toDays() < 1) {
+                formatted = duration.toHours() + " ч назад";
+            } else if (duration.toDays() <= 7) {
+                formatted = duration.toDays() + " д назад";
+            } else {
+                formatted = post.getCreatedAt().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
+            }
+
+            postTimes.put(post.getId(), formatted);
+        }
+
+        return postTimes;
+    }
 
     @GetMapping("/account")
     public String account(Model model) {
@@ -44,8 +99,31 @@ public class AccountController {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
 
+        List<Post> posts = postRepository.findByUserIdOrderByCreatedAtDesc(user.getId());
+        Map<Long, String> postTimes = calculatePostTimes(posts);
+
+        int pageSize = 3;
+
+        Map<Long, List<Comment>> postComments = new HashMap<>();
+        Map<Long, Long> postCommentsCount = new HashMap<>();
+
+        for (Post post : posts) {
+            Pageable pageable = PageRequest.of(0, pageSize, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+            Page<Comment> page = commentRepository.findByPostId(post.getId(), pageable);
+            postComments.put(post.getId(), page.getContent());
+
+            long count = commentRepository.countByPostId(post.getId());
+            postCommentsCount.put(post.getId(), count);
+        }
+
         model.addAttribute("user", user);
+        model.addAttribute("posts", posts);
+        model.addAttribute("postTimes", postTimes);
+        model.addAttribute("postComments", postComments);
+        model.addAttribute("postCommentsCount", postCommentsCount);
         model.addAttribute("activePage", "account");
+
         return "account";
     }
 
@@ -54,7 +132,8 @@ public class AccountController {
             @Valid @ModelAttribute User updatedUser,
             BindingResult bindingResult,
             @RequestParam(required = false) MultipartFile photo,
-            Model model
+            Model model,
+            RedirectAttributes redirectAttributes
     ) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -71,6 +150,13 @@ public class AccountController {
                     return new RuntimeException("Пользователь не найден");
                 });
 
+        // Проверка на дубликат email
+        Optional<User> existingUserOpt = userRepository.findByEmail(updatedUser.getEmail());
+        if (existingUserOpt.isPresent() && !existingUserOpt.get().getId().equals(user.getId())) {
+            redirectAttributes.addFlashAttribute("toastMessage", "Такой логин уже занят!");
+            return "redirect:/account";
+        }
+
         // Валидация полей
         if (bindingResult.hasErrors()) {
             model.addAttribute("user", updatedUser);
@@ -80,38 +166,57 @@ public class AccountController {
             return "account";
         }
 
+        List<Post> posts = postRepository.findByUserIdOrderByCreatedAtDesc(user.getId());
+        Map<Long, String> postTimes = calculatePostTimes(posts);
+
         // Обновляем обычные поля
         user.setName(updatedUser.getName());
         user.setEmail(updatedUser.getEmail());
         user.setDescription(updatedUser.getDescription());
+        model.addAttribute("posts", posts);
+        model.addAttribute("postTimes", postTimes);
 
         // --- Загрузка фото ---
         try {
             if (photo != null && !photo.isEmpty()) {
-                if (photo.getSize() > 10 * 1024 * 1024) { // 10MB
-                    throw new MaxUploadSizeExceededException(10 * 1024 * 1024);
+                if (photo.getSize() > 20 * 1024 * 1024) { // максимум 20MB
+                    throw new MaxUploadSizeExceededException(20 * 1024 * 1024);
                 }
 
-                String filename = UUID.randomUUID() + "_" + photo.getOriginalFilename();
+                String filename = UUID.randomUUID() + ".jpg";
+                Path uploadDir = Paths.get(uploadProperties.getBasePath(), "images", "avatars");
+                Files.createDirectories(uploadDir);
 
-                // Используем путь из UploadProperties
-                Path uploadPath = Paths.get(uploadProperties.getBasePath(), "images", "avatars", filename);
+                Path uploadPath = uploadDir.resolve(filename);
+                BufferedImage original = ImageIO.read(photo.getInputStream());
 
-                Files.createDirectories(uploadPath.getParent()); // создаём директории если их нет
-                Files.write(uploadPath, photo.getBytes());
+                Thumbnails.of(original)
+                        .size(original.getWidth(), original.getHeight())
+                        .outputFormat("jpg")
+                        .toFile(uploadPath.toFile());
 
-                // Сохраняем путь для отображения в HTML
-                String relativePath = "/images/avatars/" + filename; 
+                String relativePath = "/images/avatars/" + filename;
                 user.setPhotoPath(relativePath);
             }
         } catch (MaxUploadSizeExceededException e) {
+            model.addAttribute("posts", posts);
+            model.addAttribute("postTimes", postTimes);
             model.addAttribute("user", user);
-            model.addAttribute("toastMessage", "Файл слишком большой! Максимум 10MB.");
+            model.addAttribute("toastMessage", "Файл слишком большой! Максимум 20MB.");
             model.addAttribute("activePage", "account");
             return "account";
         } catch (IOException e) {
+            model.addAttribute("posts", posts);
+            model.addAttribute("postTimes", postTimes);
             model.addAttribute("user", user);
             model.addAttribute("toastMessage", "Ошибка при загрузке фото!");
+            model.addAttribute("activePage", "account");
+            return "account";
+        } catch (RuntimeException e) {
+            model.addAttribute("posts", posts);
+            model.addAttribute("postTimes", postTimes);
+            model.addAttribute("user", user);
+            model.addAttribute("toastMessage", e.getMessage()); // здесь будет "Такой логин уже занят!"
             model.addAttribute("activePage", "account");
             return "account";
         }
@@ -130,13 +235,147 @@ public class AccountController {
                 newUserDetails.getPassword(),
                 newUserDetails.getAuthorities()
         );
-
         SecurityContextHolder.getContext().setAuthentication(newAuth);
 
+        Map<Long, List<Comment>> postComments = new HashMap<>();
+        for (Post post : posts) {
+            int pageSize = 3;
+            Pageable pageable = PageRequest.of(0, pageSize, Sort.by("createdAt").descending());
+            List<Comment> comments = commentRepository.findByPostIdOrderByCreatedAtDesc(post.getId(), pageable);
+            postComments.put(post.getId(), comments);
+        }
+        Map<Long, Long> postCommentsCount = new HashMap<>();
+        for (Post post : posts) {
+            long count = commentRepository.countByPostId(post.getId());
+            postCommentsCount.put(post.getId(), count);
+        }
+        model.addAttribute("postCommentsCount", postCommentsCount);
+        model.addAttribute("postComments", postComments);
         model.addAttribute("user", user);
-        //model.addAttribute("toastMessage", "Профиль успешно обновлен!");
         model.addAttribute("activePage", "account");
 
-        return "account"; // оставляем на той же странице, чтобы toast отобразился
+        return "account";
+    }
+
+    @PostMapping("/posts/create")
+    public String createPost(
+            @RequestParam("image") MultipartFile image,
+            @RequestParam("postCaption") String title,
+            @RequestParam("postDescription") String description,
+            Model model
+    ) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || auth.getName() == null) {
+            model.addAttribute("toastMessage", "Ошибка: пользователь не авторизован!");
+            return "account";
+        }
+
+        User user = userRepository.findByEmail(auth.getName())
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+
+        try {
+            // Проверка изображения
+            if (image == null || image.isEmpty()) {
+                List<Post> posts = postRepository.findByUserIdOrderByCreatedAtDesc(user.getId());
+                Map<Long, String> postTimes = calculatePostTimes(posts);
+                model.addAttribute("posts", posts);
+                model.addAttribute("postTimes", postTimes);
+                model.addAttribute("toastMessage", "Пожалуйста, выберите изображение!");
+                model.addAttribute("user", user);
+                return "account";
+            }
+
+            if (image.getSize() > 20 * 1024 * 1024) { // максимум 20MB
+                List<Post> posts = postRepository.findByUserIdOrderByCreatedAtDesc(user.getId());
+                Map<Long, String> postTimes = calculatePostTimes(posts);
+                model.addAttribute("posts", posts);
+                model.addAttribute("postTimes", postTimes);
+                model.addAttribute("toastMessage", "Файл слишком большой! Максимум 20MB.");
+                model.addAttribute("user", user);
+                return "account";
+            }
+
+            // Генерируем уникальное имя файла
+            String filename = UUID.randomUUID() + ".jpg";
+            Path uploadDir = Paths.get(uploadProperties.getBasePath(), "images", "posts");
+            Files.createDirectories(uploadDir);
+            Path uploadPath = uploadDir.resolve(filename);
+
+            // Сохраняем изображение
+            BufferedImage original = ImageIO.read(image.getInputStream());
+            Thumbnails.of(original)
+                    .size(original.getWidth(), original.getHeight())
+                    .outputFormat("jpg")
+                    .toFile(uploadPath.toFile());
+
+            String relativePath = "/images/posts/" + filename;
+
+            // Создаём пост
+            Post post = new Post(relativePath, title, description, user);
+
+            // Сохраняем пост с проверкой валидности
+            try {
+                postRepository.save(post);
+            } catch (jakarta.validation.ConstraintViolationException e) {
+                String errorMessage = e.getConstraintViolations()
+                        .stream()
+                        .map(violation -> violation.getMessage())
+                        .findFirst()
+                        .orElse("Ошибка валидации поста!");
+                List<Post> posts = postRepository.findByUserIdOrderByCreatedAtDesc(user.getId());
+                Map<Long, String> postTimes = calculatePostTimes(posts);
+                model.addAttribute("posts", posts);
+                model.addAttribute("postTimes", postTimes);
+                model.addAttribute("toastMessage", errorMessage);
+                model.addAttribute("user", user);
+                return "account";
+            }
+
+        } catch (IOException e) {
+            List<Post> posts = postRepository.findByUserIdOrderByCreatedAtDesc(user.getId());
+            Map<Long, String> postTimes = calculatePostTimes(posts);
+            model.addAttribute("posts", posts);
+            model.addAttribute("postTimes", postTimes);
+            model.addAttribute("toastMessage", "Ошибка при загрузке изображения!");
+            model.addAttribute("user", user);
+            return "account";
+        }
+
+        model.addAttribute("toastMessage", "Пост успешно создан!");
+        return "redirect:/account";
+    }
+
+    @PostMapping("/posts/delete")
+    public String deletePost(@RequestParam("postId") Long postId, Model model) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || auth.getName() == null) {
+            model.addAttribute("toastMessage", "Ошибка: пользователь не авторизован!");
+            return "redirect:/account";
+        }
+
+        User user = userRepository.findByEmail(auth.getName())
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Пост не найден"));
+
+        // Проверяем, что пост принадлежит текущему пользователю
+        if (!post.getUser().getId().equals(user.getId())) {
+            model.addAttribute("toastMessage", "Нельзя удалить чужой пост!");
+            return "redirect:/account";
+        }
+
+        // Удаляем файл изображения
+        Path imagePath = Paths.get(uploadProperties.getBasePath(), "images", "posts", Paths.get(post.getPhotoPath()).getFileName().toString());
+        try {
+            Files.deleteIfExists(imagePath);
+        } catch (IOException e) {
+            model.addAttribute("toastMessage", "Ошибка при удалении изображения!");
+            return "redirect:/account";
+        }
+
+        // Удаляем запись из базы
+        postRepository.delete(post);
+        return "redirect:/account";
     }
 }

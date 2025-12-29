@@ -85,7 +85,7 @@ class CustomFooter extends HTMLElement {
             </ul>
           </div>
           <div class="footer-section">
-            <h3>Соц. сети и связь</h3>
+            <h3>Социальные сети и связь</h3>
             <div class="social-links">
               <a href="https://www.instagram.com/andayleee/" aria-label="Instagram">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor"

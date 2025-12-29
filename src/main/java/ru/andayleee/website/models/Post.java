@@ -2,6 +2,8 @@ package ru.andayleee.website.models;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
+
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,6 +25,9 @@ public class Post {
     @Size(max = 1000, message = "Описание не должно превышать 1000 символов")
     private String description;
 
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
+
     // Внешний ключ на пользователя
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -30,6 +35,7 @@ public class Post {
 
     // Комментарии к посту
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("createdAt ASC")
     private List<Comment> comments = new ArrayList<>();
 
     // Лайки к посту
@@ -46,6 +52,11 @@ public class Post {
         this.user = user;
     }
 
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
+
     // Геттеры и сеттеры
     public Long getId() { return id; }
 
@@ -58,6 +69,8 @@ public class Post {
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
+    public LocalDateTime getCreatedAt() { return createdAt; }
+
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
 
@@ -66,4 +79,14 @@ public class Post {
 
     public List<Like> getLikes() { return likes; }
     public void setLikes(List<Like> likes) { this.likes = likes; }
+
+    // --- Методы для лайков ---
+    public boolean isLikedBy(User user) {
+        if (user == null) return false;
+        return likes.stream().anyMatch(like -> like.getUser().getId().equals(user.getId()));
+    }
+
+    public int getLikesCount() {
+        return likes.size();
+    }
 }

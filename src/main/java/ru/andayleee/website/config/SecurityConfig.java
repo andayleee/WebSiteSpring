@@ -28,7 +28,8 @@ public class SecurityConfig {
                     "/login",          
                     "/css/**",         
                     "/js/**",
-                    "/images/**"
+                    "/images/**",
+                    "/sitemap.xml" 
                 ).permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()

@@ -30,7 +30,11 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addResourceHandler("/images/mainPageItem/**")
                 .addResourceLocations(mainPagePath);
 
-        // Можно добавлять другие папки аналогично
+        // Папка с постами
+        Path postsDir = Paths.get(uploadProperties.getBasePath(), "images", "posts");
+        String postsPath = postsDir.toAbsolutePath().toUri().toString();
+        registry.addResourceHandler("/images/posts/**")
+                .addResourceLocations(postsPath);
     }
 }
 
