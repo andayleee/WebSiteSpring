@@ -45,6 +45,8 @@ import ru.andayleee.website.config.UploadProperties;
 import ru.andayleee.website.repositories.CommentRepository;
 import ru.andayleee.website.repositories.PostRepository;
 import ru.andayleee.website.repositories.UserRepository;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 public class AccountController {
@@ -377,5 +379,67 @@ public class AccountController {
         // Удаляем запись из базы
         postRepository.delete(post);
         return "redirect:/account";
+    }
+
+    @PostMapping("/account/posts/update")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> updatePost(
+            @RequestParam("postId") Long postId,
+            @RequestParam("title") String title,
+            @RequestParam("description") String description
+    ) {
+        System.out.println("updatePost вызван: " + postId + " " + title);
+        Map<String, Object> response = new HashMap<>();
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || auth.getName() == null) {
+            response.put("success", false);
+            response.put("toastMessage", "Пользователь не авторизован");
+            return ResponseEntity.status(401).body(response);
+        }
+
+        User user = userRepository.findByEmail(auth.getName()).orElse(null);
+        if (user == null) {
+            response.put("success", false);
+            response.put("toastMessage", "Пользователь не найден");
+            return ResponseEntity.status(404).body(response);
+        }
+
+        Optional<Post> postOpt = postRepository.findById(postId);
+        if (postOpt.isEmpty()) {
+            response.put("success", false);
+            response.put("toastMessage", "Пост не найден");
+            return ResponseEntity.status(404).body(response);
+        }
+
+        Post post = postOpt.get();
+        if (!post.getUser().getId().equals(user.getId())) {
+            response.put("success", false);
+            response.put("toastMessage", "Нельзя редактировать чужой пост");
+            return ResponseEntity.status(403).body(response);
+        }
+
+        // Валидация
+        if (title == null || title.isBlank() || title.length() > 250) {
+            response.put("success", false);
+            response.put("toastMessage", "Заголовок не может быть пустым или длиннее 250 символов");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        if (description != null && description.length() > 1000) {
+            response.put("success", false);
+            response.put("toastMessage", "Описание не может быть длиннее 1000 символов");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        post.setTitle(title);
+        post.setDescription(description != null ? description : "");
+        postRepository.save(post);
+
+        response.put("success", true);
+        response.put("title", post.getTitle());
+        response.put("description", post.getDescription());
+
+        return ResponseEntity.ok(response);
     }
 }

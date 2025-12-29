@@ -26,6 +26,99 @@ document.addEventListener("DOMContentLoaded", () => {
         setTimeout(() => toast.remove(), 5000);
         toast.querySelector(".close-toast-btn").addEventListener("click", () => toast.remove());
     }
+    // ----------------------
+    //  Показ формы редактирования поста 
+    // ----------------------
+    document.querySelectorAll(".edit-post-btn").forEach(btn => {
+        btn.addEventListener("click", e => {
+            const postItem = btn.closest(".post-item");
+            const postForm = postItem.querySelector(".edit-post-form");
+            const titleEl = postItem.querySelector("h4");
+            const descEl = postItem.querySelector("p.text-gray-600");
+
+            if (postForm) {
+                postForm.classList.remove("hidden");
+                if (titleEl) titleEl.classList.add("hidden");
+                if (descEl) descEl.classList.add("hidden");
+            }
+        });
+    });
+    // ----------------------
+    //  Отмена редактирования поста 
+    // ----------------------
+    document.querySelectorAll(".cancel-edit-post-btn").forEach(btn => {
+        btn.addEventListener("click", e => {
+            const postForm = btn.closest(".edit-post-form");
+            const postItem = btn.closest(".post-item");
+            const titleEl = postItem.querySelector("h4");
+            const descEl = postItem.querySelector("p.text-gray-600");
+
+            if (postForm) {
+                postForm.classList.add("hidden");
+                if (titleEl) titleEl.classList.remove("hidden");
+                if (descEl) descEl.classList.remove("hidden");
+            }
+        });
+    });
+
+    // ----------------------
+    //  Сохранение изменений через AJAX редактирования поста
+    // ----------------------
+    document.querySelectorAll(".edit-post-form").forEach(form => {
+        form.addEventListener("submit", async e => {
+            e.preventDefault();
+
+            const postId = form.dataset.postId;
+            const title = form.querySelector("input[name='title']").value.trim();
+            const description = form.querySelector("textarea[name='description']").value.trim();
+
+            const token = document.querySelector('meta[name="_csrf"]').content;
+            const header = document.querySelector('meta[name="_csrf_header"]').content;
+
+            try {
+                const response = await fetch("/account/posts/update", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                        [header]: token
+                    },
+                    body: new URLSearchParams({ postId, title, description })
+                });
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    showToast(data.toastMessage || "Ошибка при обновлении поста");
+                    return;
+                }
+
+                // Обновляем текст на странице
+                const postItem = form.closest(".post-item");
+
+                // Обновляем заголовок
+                const titleEl = postItem.querySelector("h4");
+                if (titleEl) {
+                    titleEl.textContent = data.title;
+                    titleEl.classList.remove("hidden");
+                }
+
+                // Обновляем описание
+                const descSpan = postItem.querySelector(".post-description");
+                if (descSpan) {
+                    descSpan.innerText = data.description;
+                    const descP = descSpan.closest("p");
+                    if (descP) descP.classList.remove("hidden");
+                }
+
+                // Скрываем форму редактирования
+                form.classList.add("hidden");
+
+            } catch (err) {
+                console.error(err);
+                showToast("Ошибка при обновлении поста");
+            }
+        });
+    });
 
     // ----------------------
     // Добавление комментария
@@ -38,6 +131,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const token = document.querySelector('meta[name="_csrf"]').content;
         const header = document.querySelector('meta[name="_csrf_header"]').content;
+
+        if (!content) {
+            showToast("Комментарий не может быть пустым!");
+            return;
+        }
+        if (content.length > 1000) {
+            showToast("Комментарий не может быть более 1000 символов!");
+            return;
+        }
 
         try {
             const response = await fetch("/comments/add", {
