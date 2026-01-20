@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="p-6">
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center">
-                        <img src="${post.user.photoPath}" alt="User" class="w-10 h-10 rounded-full mr-3">
+                        <img src="${post.user.photoPath}" alt="User" class="w-8 h-8 object-cover rounded-full mr-3">
                         <div>
                             <h3 class="font-bold text-gray-800">${post.user.name}</h3>
                             <p class="text-sm text-gray-500">${post.createdAt}</p>

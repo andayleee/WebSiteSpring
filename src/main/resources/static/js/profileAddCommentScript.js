@@ -167,7 +167,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 : '';
 
             commentDiv.innerHTML = `
-                <img src="${data.userPhoto}" alt="Commenter" class="w-8 h-8 rounded-full mr-3">
+                <img src="${data.userPhoto}" alt="Commenter" class="w-8 h-8 object-cover rounded-full mr-3">
                 <div class="bg-gray-50 p-3 rounded-lg flex-1 relative">
                     <div class="flex items-center justify-between">
                         <span class="font-medium text-sm">${data.userName}</span>
@@ -255,19 +255,30 @@ document.addEventListener("DOMContentLoaded", () => {
                 const comments = await response.json();
                 comments.forEach(comment => {
                     const commentDiv = document.createElement("div");
-                    commentDiv.classList.add("flex", "comment-item");
+                    commentDiv.classList.add("flex");
                     commentDiv.dataset.commentId = comment.id;
-                    commentDiv.innerHTML = `
-                        <img src="${comment.userPhoto}" alt="Commenter" class="w-8 h-8 rounded-full mr-3">
+                    htmlText = `
+                        <img src="${comment.userPhoto}" alt="Commenter" class="w-8 h-8 object-cover rounded-full mr-3">
                         <div class="bg-gray-50 p-3 rounded-lg flex-1 relative">
                             <div class="flex items-center justify-between">
                                 <span class="font-medium text-sm">${comment.userName}</span>
                                 <span class="text-xs text-gray-400">${comment.createdAt}</span>
                             </div>
                             <p class="text-sm mt-1 break-words">${comment.content}</p>
-                            <button class="absolute top-1 right-1 text-red-500 text-xs hover:text-red-700 delete-comment-btn">Удалить</button>
+                    `;
+                    if (comment.idCommentUser == comment.idCurrentUser){
+                        htmlText += `
+                        <button class="absolute top-1 right-1 text-red-500 text-xs hover:text-red-700 delete-comment-btn">
+                                Удалить
+                            </button> 
                         </div>
                     `;
+                    } else{
+                        htmlText += `</div>
+                    `;
+                    }
+                    commentDiv.innerHTML = htmlText;
+                    
                     commentsSection.appendChild(commentDiv);
                 });
 

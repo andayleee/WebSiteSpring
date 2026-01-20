@@ -94,11 +94,17 @@ public class CommentController {
 
         List<Comment> commentsPage = allComments.subList(start, end);
         List<Map<String, Object>> response = new ArrayList<>();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
 
         for (Comment comment : commentsPage) {
             Map<String, Object> map = new HashMap<>();
             map.put("id", comment.getId());
             map.put("content", comment.getContent());
+            map.put("idCommentUser", comment.getUser().getId());
+            map.put("idCurrentUser", user.getId());
             map.put("userName", comment.getUser().getName());
             map.put("userPhoto", comment.getUser().getPhotoPath());
             map.put("createdAt", comment.getCreatedAt().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")));
