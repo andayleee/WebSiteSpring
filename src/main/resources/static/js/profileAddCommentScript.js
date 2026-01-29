@@ -227,6 +227,25 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ----------------------
+    // Ответ на комментарий
+    // ----------------------
+    async function answerComment(commentDiv, userLink) {
+        if (!commentDiv) return;
+        if (userLink) {
+            const userPath = userLink.getAttribute('href'); 
+            const userId = userPath.split('/').pop();
+            const userName = userLink.querySelector('span').textContent.trim();
+            
+            const commentInput = document.getElementById('comment-input');
+            if (commentInput) {
+                commentInput.value = `@${userName}, `;
+                commentInput.focus();
+                commentInput.dataset.replyTo = userId;
+            }
+        }  
+    }
+
+    // ----------------------
     // Пагинация комментариев
     // ----------------------
     const pageSize = 3;
@@ -261,20 +280,26 @@ document.addEventListener("DOMContentLoaded", () => {
                         <img src="${comment.userPhoto}" alt="Commenter" class="w-8 h-8 object-cover rounded-full mr-3">
                         <div class="bg-gray-50 p-3 rounded-lg flex-1 relative">
                             <div class="flex items-center justify-between">
-                                <span class="font-medium text-sm">${comment.userName}</span>
+                                <a href="/user/${comment.idCommentUser}" class="flex items-center">
+                                  <span class="font-medium fw-bold text-sm">${comment.userName}</span>
+                                </a>
                                 <span class="text-xs text-gray-400">${comment.createdAt}</span>
                             </div>
                             <p class="text-sm mt-1 break-words">${comment.content}</p>
                     `;
                     if (comment.idCommentUser == comment.idCurrentUser){
                         htmlText += `
-                        <button class="absolute top-1 right-1 text-red-500 text-xs hover:text-red-700 delete-comment-btn">
+                        <button class="absolute bottom-1 right-3 text-red-500 text-xs hover:text-red-700 delete-comment-btn">
                                 Удалить
                             </button> 
                         </div>
                     `;
                     } else{
-                        htmlText += `</div>
+                        htmlText += `
+                        <button class="absolute bottom-1 right-3 text-secondary text-xs text-hover-dark answer-comment-btn">
+                                Ответить
+                            </button>
+                        </div>
                     `;
                     }
                     commentDiv.innerHTML = htmlText;
@@ -337,6 +362,11 @@ document.addEventListener("DOMContentLoaded", () => {
         if (e.target.classList.contains("delete-comment-btn")) {
             const commentDiv = e.target.closest("div[data-comment-id]");
             deleteComment(commentDiv);
+        }
+        if (e.target.classList.contains("answer-comment-btn")) {
+            const commentDiv = e.target.closest("div[data-comment-id]");
+            const userLink = commentDiv.querySelector('a[href^="/user/"]');
+            answerComment(commentDiv, userLink);
         }
     });
 });

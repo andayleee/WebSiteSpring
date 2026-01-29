@@ -5,6 +5,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const profileView = document.getElementById('profileView');
     const profileEdit = document.getElementById('profileEdit');
     const avatar = document.getElementById('userPhoto');
+    const photoInput = document.getElementById('photoInput');
+    const fileNameUserSpan = document.getElementById('fileName');
     const wrapper = avatar ? avatar.parentElement : null;
 
     // ===== Элементы формы поста =====
@@ -58,10 +60,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (!postImage.files.length) {
                 errorMessage = "Пожалуйста, выберите изображение!";
-            } else if (postCaption && postCaption.value.length > 250) {
-                errorMessage = "Подпись не может быть более 250 символов!";
-            } else if (postDescription && postDescription.value.length > 1000) {
-                errorMessage = "Описание не может быть более 1000 символов!";
+            } else {
+                const file = postImage.files[0];
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                const maxSize = 20 * 1024 * 1024; // 20MB
+                
+                // Проверка типа файла
+                if (!allowedTypes.includes(file.type)) {
+                    errorMessage = "Пожалуйста, выберите файл в формате JPEG, PNG или GIF!";
+                }
+                // Проверка размера файла (опционально)
+                else if (file.size > maxSize) {
+                    errorMessage = "Размер файла не должен превышать 20MB!";
+                }
+                // Если все проверки прошли успешно, проверяем остальные поля
+                else if (postCaption && postCaption.value.length > 250) {
+                    errorMessage = "Подпись не может быть более 250 символов!";
+                } else if (postDescription && postDescription.value.length > 1000) {
+                    errorMessage = "Описание не может быть более 1000 символов!";
+                }
             }
 
             if (errorMessage) {
@@ -70,6 +87,47 @@ document.addEventListener('DOMContentLoaded', function() {
                     toastEl.querySelector('.toast-body').textContent = errorMessage;
                     bsToast.show();
                 }
+            }
+        });
+    }
+
+    if (profileEdit){
+        profileEdit.addEventListener('submit', function(e) {
+            let errorMessage = "";
+
+            if (!photoInput.files.length) {
+                errorMessage = "Пожалуйста, выберите изображение!";
+            } else {
+                const file = photoInput.files[0];
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                const maxSize = 20 * 1024 * 1024; // 20MB
+                
+                // Проверка типа файла
+                if (!allowedTypes.includes(file.type)) {
+                    errorMessage = "Пожалуйста, выберите файл в формате JPEG, PNG или GIF!";
+                }
+                // Проверка размера файла 
+                else if (file.size > maxSize) {
+                    errorMessage = "Размер файла не должен превышать 20MB!";
+                }
+            }
+
+            if (errorMessage) {
+                e.preventDefault();
+                if (bsToast && toastEl) {
+                    toastEl.querySelector('.toast-body').textContent = errorMessage;
+                    bsToast.show();
+                }
+            }
+        });
+    }
+
+    if (photoInput && fileNameUserSpan){
+        photoInput.addEventListener('change', function() {
+            if (this.files && this.files.length > 0) {
+                fileNameUserSpan.textContent = this.files[0].name;
+            } else {
+                fileNameUserSpan.textContent = "Файл не выбран";
             }
         });
     }

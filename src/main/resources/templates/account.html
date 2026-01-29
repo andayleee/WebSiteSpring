@@ -186,7 +186,7 @@
       <div class="p-6">
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center">
-            <img th:src="@{${user.photoPath}}" alt="User" class="w-10 h-10 object-cover rounded-full mr-3">
+            <img th:src="@{${user.photoPath}}" alt="User" class="w-10 h-10 object-cover rounded-full mr-3 cursor-pointer">
             <div>
               <h3 class="font-bold text-gray-800" th:text="${user.name}">Имя</h3>
               <h6 class="text-sm text-gray-500" th:text="${postTimes[post.id]}"></h6>
@@ -251,19 +251,28 @@
         <!-- Comments Section -->
         <div class="mt-4 space-y-3 comments-section" th:data-post-id="${post.id}" th:data-total-comments="${postCommentsCount[post.id]}">
           <div th:each="comment : ${postComments[post.id]}" class="flex" th:data-comment-id="${comment.id}">
-              <img th:src="@{${comment.user.photoPath}}" alt="Commenter" class="w-8 h-8 object-cover rounded-full mr-3">
+              <img th:src="@{${comment.user.photoPath}}" alt="Commenter" class="w-8 h-8 object-cover rounded-full mr-3 cursor-pointer">
               <div class="bg-gray-50 p-3 rounded-lg flex-1 relative">
                   <div class="flex items-center justify-between">
-                      <span class="font-medium text-sm" th:text="${comment.user.name}">Пользователь</span>
+                    <a th:href="@{'/user/' + ${comment.user.id}}" class="flex items-center">
+                      <span class="font-medium fw-bold text-sm" th:text="${comment.user.name}">Пользователь</span>
+                    </a>
                       <span class="text-xs text-gray-400" th:text="${#temporals.format(comment.createdAt, 'dd.MM.yyyy HH:mm')}">Когда</span>
                   </div>
                   <p class="text-sm mt-1 break-words" th:text="${comment.content}">Комментарий</p>
 
                   <!-- Кнопка удалить видна только если комментарий текущего пользователя -->
-                  <button th:if="${comment.user.id == user.id}" 
-                          class="absolute top-1 right-1 text-red-500 text-xs hover:text-red-700 delete-comment-btn">
-                      Удалить
-                  </button>
+                   <div class="absolute bottom-1 right-3">
+                      <button th:if="${comment.user.id != user.id}" 
+                              class="text-secondary text-xs text-hover-dark answer-comment-btn">
+                          Ответить
+                      </button>
+                      <button th:if="${comment.user.id == user.id}" 
+                              class="text-red-500 text-xs hover:text-red-700 delete-comment-btn">
+                          Удалить
+                      </button>
+                   </div>
+                  
               </div>
           </div>
       </div>
@@ -273,7 +282,7 @@
         
         <!-- Add Comment Form -->
         <form class="mt-4 flex add-comment-form" th:data-post-id="${post.id}">
-            <input type="text" name="content" placeholder="Напишите комментарий..." 
+            <input type="text"  id="comment-input" name="content" placeholder="Напишите комментарий..." 
                   class="flex-1 px-4 py-2 rounded-l-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-sm"
                   required>
             <button type="submit" class="bg-indigo-500 text-white px-4 py-2 rounded-r-lg hover:bg-indigo-600 transition">

@@ -4,21 +4,26 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import ru.andayleee.website.models.Comment;
 import ru.andayleee.website.models.Post;
@@ -72,19 +77,21 @@ public class UsersController {
         User currentUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
         
-        // Получаем всех пользователей
         Iterable<User> allUsersIterable = userRepository.findAll();
         
-        // Фильтруем - исключаем текущего пользователя
         List<User> otherUsers = new ArrayList<>();
-        for (User user : allUsersIterable) {
-            if (!user.getId().equals(currentUser.getId())) {
-                otherUsers.add(user);
-            }
-        }
+        allUsersIterable.forEach(otherUsers::add);
+        otherUsers.removeIf(user -> user.getId().equals(currentUser.getId()));
+
+        Collections.shuffle(otherUsers);
+
+        int limit = Math.min(5, otherUsers.size());
+        List<User> randomUsers = otherUsers.stream()
+                .limit(limit)
+                .collect(Collectors.toList());
         
         model.addAttribute("currentUser", currentUser);
-        model.addAttribute("users", otherUsers); // только другие пользователи
+        model.addAttribute("users", randomUsers); 
         model.addAttribute("activePage", "users");
 
         return "users";
@@ -137,4 +144,52 @@ public class UsersController {
         
         return "profile"; 
     }
+
+    @GetMapping("/users/search")
+    @ResponseBody
+    public ResponseEntity<List<UserSearchResult>> searchUsers(
+            @RequestParam String query,
+            @RequestParam(defaultValue = "5") int limit) {
+        
+        if (query == null || query.trim().isEmpty()) {
+            return ResponseEntity.ok(Collections.emptyList());
+        }
+        
+        String searchTerm = "%" + query.toLowerCase() + "%";
+        
+        List<User> users = userRepository.searchUsers(searchTerm);
+        
+        List<UserSearchResult> result = users.stream()
+            .limit(limit)
+            .map(user -> new UserSearchResult(
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getPhotoPath()
+            ))
+            .collect(Collectors.toList());
+        
+        return ResponseEntity.ok(result);
+    }
+    
+    public static class UserSearchResult {
+        private Long id;
+        private String name;
+        private String email;
+        private String photoPath;
+        
+        public UserSearchResult(Long id, String name, String email, String photoPath) {
+            this.id = id;
+            this.name = name;
+            this.email = email;
+            this.photoPath = photoPath;
+        }
+        
+        public Long getId() { return id; }
+        public String getName() { return name; }
+        public String getEmail() { return email; }
+        public String getPhotoPath() { return photoPath; }
+    }
+
+    
 }

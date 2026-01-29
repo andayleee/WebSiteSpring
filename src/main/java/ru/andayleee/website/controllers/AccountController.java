@@ -63,8 +63,8 @@ public class AccountController {
     @Autowired
     private UploadProperties uploadProperties;
 
-    private static final int POST_PAGE_SIZE = 3;
-    private static final int COMMENT_PAGE_SIZE = 3;
+    // private static final int POST_PAGE_SIZE = 3;
+    // private static final int COMMENT_PAGE_SIZE = 3;
 
     //Метод для вывода времени
     private Map<Long, String> calculatePostTimes(List<Post> posts) {
