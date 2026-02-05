@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="_csrf" th:content="${_csrf.token}" />
   <meta name="_csrf_header" th:content="${_csrf.headerName}" />
-  <title>andayleee - Профиль</title>
+  <title>andayleee - МемоЛента</title>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-YQ85K7N4J6"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -41,71 +41,21 @@
   </style>
 </head>
 <body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
-    <div th:replace="~{blocks/header :: header}"></div>
-    <div class="container mx-auto px-4 py-8 max-w-6xl">
-        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 md:p-8">
-            <!-- Аватар -->
-            <div class="flex flex-col items-center">
-                <div class="relative group w-48 h-48 md:w-56 md:h-56 mb-6 avatar-hover rounded-full">
-                <div id="photoLoader" class="absolute inset-0 flex items-center justify-center bg-secondary bg-opacity-20 rounded-full">
-                    <div class="spinner-border text-white" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                </div>
+<div th:replace="~{blocks/header :: header}"></div>
 
-                <img th:src="@{${profileUser.photoPath} + '?v=' + ${#dates.format(#dates.createNow(), 'yyyyMMddHHmmss')}}" 
-                    alt="Фото профиля"
-                    class="w-full h-full rounded-full object-cover shadow-md border-4 border-white transition-all duration-300 group-hover:border-indigo-300 cursor-pointer"
-                    id="userPhoto">
-            </div>
-
-                <!-- Модалка фото -->
-                <div class="modal fade overflow-hidden" id="photoModal" tabindex="-1" aria-labelledby="photoModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered modal-xl" style="margin-top: 1rem; margin-bottom: 1rem;">
-                    <div class="modal-content bg-transparent border-0 position-relative">
-                    <div class="modal-body d-flex justify-content-center p-0 position-relative">
-                        <img id="photoModalImg" class="img-fluid rounded-lg shadow-2xl" style="max-height:70vh; width: auto;">
-                        <button type="button" class="btn-close btn-close-white position-absolute top-2 end-2 bg-white rounded-full p-2" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    </div>
-                </div>
-                </div>
-            </div>
-
-            <!-- Колонка инфы -->
-            <div class="flex flex-col justify-center">
-                <div class="profile-view" id="profileView">
-                <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2" th:text="${profileUser.getName()}">Имя</h1>
-                <div class="flex items-center text-indigo-600 mb-4">
-                    <i data-feather="user" class="mr-2"></i>
-                    <h2 class="text-lg" th:text="${profileUser.getEmail()}">Логин</h2>
-                </div>
-                <div class="bg-gray-50 rounded-lg p-4 mb-6">
-                    <div class="flex items-start">
-                    <i data-feather="info" class="text-indigo-500 mr-3 mt-1"></i>
-                    <p class="text-gray-600" th:text="${profileUser.getDescription()} ?: 'Пока нет описания профиля'">Описание</p>
-                    </div>
-                </div>
-                </div>
-            </div>
-            </div>
-        </div>
-    
-
-
-    <h2 th:if="!${#lists.isEmpty(posts)}" class="text-2xl font-bold text-gray-800 mb-6 mt-6">Посты пользователя</h2>
-  
-  <!-- Секция постов -->
+<div class="container mx-auto px-4 py-8 max-w-6xl">
+    <!-- Секция постов -->
   <div id="postsContainer" class="space-y-6">
     <div th:each="post : ${posts}" class="post-item bg-white rounded-xl shadow-lg overflow-hidden">
-      <img th:src="@{${post.photoPath}}" alt="Post image" class="w-full h-64 object-cover cursor-pointer">
+      <div class="d-flex justify-content-center w-100">
+        <img th:src="@{${post.photoPath}}" alt="Post image" class="object-cover cursor-pointer" style="max-height: 500px; min-height: 400px;">
+      </div>
       <div class="p-6">
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center">
-            <img th:src="@{${profileUser.photoPath}}" alt="User" class="w-10 h-10 object-cover rounded-full mr-3 cursor-pointer">
+            <img th:src="@{${post.user.photoPath}}" alt="User" class="w-10 h-10 object-cover rounded-full mr-3 cursor-pointer">
             <div>
-              <h3 class="font-bold text-gray-800" th:text="${profileUser.name}">Имя</h3>
+              <h3 class="font-bold text-gray-800" th:text="${post.user.name}">Имя</h3>
               <h6 class="text-sm text-gray-500" th:text="${postTimes[post.id]}"></h6>
             </div>
           </div>
@@ -169,18 +119,13 @@
 
       </div>
     </div>
-  </div>    
-
-    <!-- Сообщение если нет постов -->
-    <div th:if="${#lists.isEmpty(posts)}" class="text-center py-12">
-        <p class="text-gray-500">У пользователя пока нет публикаций</p>
-    </div>
+  </div> 
 </div>
-</body>
-<script th:src="@{/js/profileScript.js}"></script>
-<script th:src="@{/js/profileAddCommentScript.js}"></script>
+
+<script th:src="@{/js/usersPosts.js}"></script>
 <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
 <script>
   feather.replace();
 </script>
+</body>
 </html>

@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
     });
 
-     let searchTimeout;
+    let searchTimeout;
     let currentSearchQuery = '';
     
     // Функция для показа прелоадера
@@ -53,7 +53,6 @@ document.addEventListener('DOMContentLoaded', () => {
         showPreloader();
         noResults.classList.add('hidden');
         
-        // AJAX запрос
         fetch(`/users/search?query=${encodeURIComponent(currentSearchQuery)}&limit=20`, {
             method: 'GET',
             headers: {
@@ -78,20 +77,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // Функция для отображения результатов поиска
     function displaySearchResults(users, query) {
-        // Переключаем состояния
         defaultState.classList.add('hidden');
         searchState.classList.remove('hidden');
         backToRandom.classList.remove('hidden');
-        
-        // Скрываем случайных пользователей
+
         randomUsers.classList.add('hidden');
-        
-        // Показываем контейнер для результатов
+
         searchResults.classList.remove('hidden');
-        
-        // Очищаем предыдущие результаты
+
         searchResults.innerHTML = '';
         
         if (users.length === 0) {
@@ -99,7 +93,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        // Генерируем HTML для каждого пользователя
         users.forEach(user => {
             const userElement = document.createElement('div');
             userElement.className = 'group relative p-6 border-b hover:bg-gray-50 transition';
@@ -147,7 +140,6 @@ document.addEventListener('DOMContentLoaded', () => {
         searchResults.classList.remove('hidden');
     }
     
-    // Функция для экранирования HTML
     function escapeHtml(text) {
         const div = document.createElement('div');
         div.textContent = text;
@@ -162,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // Обработчик нажатия Enter в поле поиска
+    // Обработчик нажатия ентер в поле поиска
     searchInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
             const query = searchInput.value.trim();
@@ -190,7 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Обработчик кнопки "Назад"
     backBtn.addEventListener('click', resetToRandom);
     
-    // Инициализация feather icons
+    // Инициализация иконок
     feather.replace();
 });
 

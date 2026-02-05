@@ -102,7 +102,6 @@ public class UsersController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String currentUserEmail = auth.getName();
         
-        // Получаем текущего пользователя
         User currentUser = userRepository.findByEmail(currentUserEmail)
                 .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
 
@@ -110,14 +109,11 @@ public class UsersController {
             return "redirect:/account";
         }
         
-        // Получаем пользователя, профиль которого просматриваем
         User profileUser = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
         
-        // Проверяем, не пытается ли пользователь посмотреть свой же профиль
         boolean isOwnProfile = currentUser.getId().equals(profileUser.getId());
         
-        // Получаем посты профильного пользователя
         List<Post> posts = postRepository.findByUserIdOrderByCreatedAtDesc(profileUser.getId());
         Map<Long, String> postTimes = calculatePostTimes(posts);
         
@@ -191,5 +187,39 @@ public class UsersController {
         public String getPhotoPath() { return photoPath; }
     }
 
-    
+    @GetMapping("/users/posts")
+    public String usersPosts(Model model) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String currentUserEmail = auth.getName();
+        
+        User currentUser = userRepository.findByEmail(currentUserEmail)
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+        
+        List<Post> posts = postRepository.findAllByOrderByCreatedAtDesc();
+        Map<Long, String> postTimes = calculatePostTimes(posts);
+        
+        int pageSize = 3;
+        Map<Long, List<Comment>> postComments = new HashMap<>();
+        Map<Long, Long> postCommentsCount = new HashMap<>();
+        
+        for (Post post : posts) {
+            Pageable pageable = PageRequest.of(0, pageSize, Sort.by(Sort.Direction.DESC, "createdAt"));
+            Page<Comment> page = commentRepository.findByPostId(post.getId(), pageable);
+            postComments.put(post.getId(), page.getContent());
+            
+            long count = commentRepository.countByPostId(post.getId());
+            postCommentsCount.put(post.getId(), count);
+        }
+        
+        model.addAttribute("currentUser", currentUser);
+        //model.addAttribute("profileUser", profileUser);
+        // model.addAttribute("isOwnProfile", isOwnProfile);
+        model.addAttribute("posts", posts);
+        model.addAttribute("postTimes", postTimes);
+        model.addAttribute("postComments", postComments);
+        model.addAttribute("postCommentsCount", postCommentsCount);
+
+        return "usersPosts";
+    }
+
 }

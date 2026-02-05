@@ -36,6 +36,8 @@
 <div class="container-fluid d-flex align-items-center justify-content-center mt-4">
   <div class="col-12 col-md-6 col-lg-5">
     <form class="p-4 border rounded shadow-sm bg-white" id="registerForm" th:action="@{/register}" method="post" th:object="${registerRequest}">
+      <h4 class="mb-3 text-xl-start">Регистрация</h4>
+      <p>После регистрации выполучите доступ к МемоЛенте! Для регистрации необходимо иметь ключ доступа)</p>
       <div class="mb-3">
         <label for="exampleInputEmail1" class="form-label">Логин</label>
         <input type="text" th:field="*{email}" name="email" class="form-control" placeholder="Email or nickname" required>

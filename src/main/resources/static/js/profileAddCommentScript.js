@@ -62,7 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // ----------------------
-    //  Сохранение изменений через AJAX редактирования поста
+    //  Сохранение изменений через ajax редактирования поста
     // ----------------------
     document.querySelectorAll(".edit-post-form").forEach(form => {
         form.addEventListener("submit", async e => {
@@ -92,17 +92,14 @@ document.addEventListener("DOMContentLoaded", () => {
                     return;
                 }
 
-                // Обновляем текст на странице
                 const postItem = form.closest(".post-item");
 
-                // Обновляем заголовок
                 const titleEl = postItem.querySelector("h4");
                 if (titleEl) {
                     titleEl.textContent = data.title;
                     titleEl.classList.remove("hidden");
                 }
 
-                // Обновляем описание
                 const descSpan = postItem.querySelector(".post-description");
                 if (descSpan) {
                     descSpan.innerText = data.description;
@@ -110,7 +107,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (descP) descP.classList.remove("hidden");
                 }
 
-                // Скрываем форму редактирования
                 form.classList.add("hidden");
 
             } catch (err) {
@@ -163,14 +159,14 @@ document.addEventListener("DOMContentLoaded", () => {
             commentDiv.dataset.commentId = data.id;
 
             const deleteBtnHtml = data.isOwner ? 
-                `<button class="absolute top-1 right-1 text-red-500 text-xs hover:text-red-700 delete-comment-btn">Удалить</button>` 
+                `<button class="absolute bottom-1 right-3 text-red-500 text-xs hover:text-red-700 delete-comment-btn">Удалить</button>` 
                 : '';
 
             commentDiv.innerHTML = `
                 <img src="${data.userPhoto}" alt="Commenter" class="w-8 h-8 object-cover rounded-full mr-3">
                 <div class="bg-gray-50 p-3 rounded-lg flex-1 relative">
                     <div class="flex items-center justify-between">
-                        <span class="font-medium text-sm">${data.userName}</span>
+                        <span class="font-medium fw-bold text-sm">${data.userName}</span>
                         <span class="text-xs text-gray-400">${data.createdAt}</span>
                     </div>
                     <p class="text-sm mt-1 break-words">${data.content}</p>
@@ -181,7 +177,6 @@ document.addEventListener("DOMContentLoaded", () => {
             commentsSection.prepend(commentDiv);
             contentInput.value = "";
 
-            // Обновление кнопки "Показать ещё" (если есть)
             const showMoreBtn = postElement.querySelector(".show-more-comments-btn");
             if (showMoreBtn) {
                 const totalComments = parseInt(commentsSection.dataset.totalComments) || 0;
@@ -260,7 +255,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const totalComments = parseInt(commentsSection.dataset.totalComments) || 0;
 
-        // Скрываем кнопку если комментариев меньше или равно pageSize
         if (commentsSection.children.length >= totalComments) btn.style.display = "none";
 
         shownComments[postId] = commentsSection.children.length;
@@ -325,7 +319,6 @@ document.addEventListener("DOMContentLoaded", () => {
         btn.addEventListener('click', () => {
             const postId = btn.dataset.postId;
 
-            // CSRF токен из meta-тега
             const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
             const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
 

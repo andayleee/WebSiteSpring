@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const galleryItems = document.querySelectorAll('.gallery-item');
     // ----------------------
-    // На контейнере с картинкой должен быть класс gallery-item, а также же рядом теги h3 и p для вывода под картинкой
+    // На контейнере с картинкой должен быть класс gallery-item
     // ----------------------
     galleryItems.forEach(item => {
         item.addEventListener('click', () => {
@@ -10,7 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
     function openLightbox(src) {
-        // Блокируем скролл страницы
         document.body.style.overflow = 'hidden';
 
         const lightbox = document.createElement('div');
@@ -23,14 +22,14 @@ document.addEventListener('DOMContentLoaded', () => {
         lightbox.style.padding = '1rem';
         lightbox.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
 
-        // Preloader
+        // Прелодер
         const preloader = document.createElement('div');
         preloader.className = 'spinner border-4 border-t-indigo-600 border-gray-200 rounded-full w-16 h-16 animate-spin';
         lightbox.appendChild(preloader);
 
         // Контейнер для картинки и текста
         const content = document.createElement('div');
-        content.className = 'relative max-w-4xl w-full hidden'; // скрыт пока картинка не загрузится
+        content.className = 'relative max-w-4xl w-full hidden';
         content.innerHTML = `           
             <div id="lightboxContent" class="flex flex-col md:flex-row items-start md:items-stretch max-w-5xl mx-auto gap-4">
                 <!-- Фото -->
@@ -62,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.appendChild(lightbox);
         feather.replace();
 
-        // Когда картинка загрузилась — скрываем прелоадер, показываем контент
+        // скрытие прелодера
         const img = content.querySelector('#lightboxImg');
         if (img.complete) {
             preloader.style.display = 'none';
@@ -81,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Закрытие лайтбокса
         content.querySelector('#closeLightboxBtn').addEventListener('click', () => {
             lightbox.remove();
-            document.body.style.overflow = ''; // возвращаем прокрутку
+            document.body.style.overflow = ''; 
         });
     }
 

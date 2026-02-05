@@ -37,7 +37,6 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Post> posts = new ArrayList<>();
 
-    // Конструкторы
     public User() {}
     public User(String email, String name, String password, String description, String photoPath, String role) {
         this.email = email;
@@ -48,7 +47,6 @@ public class User {
         this.role = role;
     }
 
-    // Геттеры и сеттеры
     public Long getId() { return id; }
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }

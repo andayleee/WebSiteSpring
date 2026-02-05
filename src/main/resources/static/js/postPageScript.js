@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!loadMoreBtn || !postsContainer) return;
 
     // ===============================
-    // Получаем CSRF-токен и заголовок
+    // CSRF-токен для доступа ajax
     // ===============================
     const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
     const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
@@ -71,7 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const deleteCommentBtn = e.target.closest(".delete-comment-btn");
         const img = e.target.closest(".gallery-item img");
 
-        // Лайк с CSRF
+        // Лайк
         if (likeBtn) {
             const postId = likeBtn.dataset.postId;
             fetch(`/posts/${postId}/like`, {
@@ -90,7 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // Удаление комментария с CSRF
+        // Удаление коммент
         if (deleteCommentBtn) {
             const commentEl = deleteCommentBtn.closest("[data-comment-id]");
             const commentId = commentEl.dataset.commentId;
@@ -105,7 +105,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // Lightbox
+        // Лайтбокс
         if (img) {
             const title = img.parentElement.querySelector("h3").textContent;
             const description = img.parentElement.querySelector("p").textContent;

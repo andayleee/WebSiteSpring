@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize lightbox functionality
     const preloader = document.getElementById('galleryPreloader');
     const images = document.querySelectorAll('#gallery img');
     let loadedCount = 0;

@@ -46,7 +46,7 @@
 <div class="container mx-auto px-4 py-8 max-w-6xl">
   <div class="bg-white rounded-xl shadow-lg overflow-hidden">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 md:p-8">
-      <!-- Avatar Column -->
+      <!-- Аватар -->
       <div class="flex flex-col items-center">
         <div class="relative group w-48 h-48 md:w-56 md:h-56 mb-6 avatar-hover rounded-full">
           <div id="photoLoader" class="absolute inset-0 flex items-center justify-center bg-secondary bg-opacity-20 rounded-full">
@@ -65,20 +65,32 @@
           <i class="mr-2"></i> Редактировать профиль
         </button>
 
-        <!-- Photo Modal -->
+        <!-- Модалка фото -->
         <div class="modal fade overflow-hidden" id="photoModal" tabindex="-1" aria-labelledby="photoModalLabel" aria-hidden="true">
           <div class="modal-dialog modal-dialog-centered modal-xl" style="margin-top: 1rem; margin-bottom: 1rem;">
             <div class="modal-content bg-transparent border-0 position-relative">
-              <div class="modal-body d-flex justify-content-center p-0 position-relative">
-                <img id="photoModalImg" class="img-fluid rounded-lg shadow-2xl" style="max-height:70vh; width: auto;">
-                <button type="button" class="btn-close btn-close-white position-absolute top-2 end-2 bg-white rounded-full p-2" data-bs-dismiss="modal" aria-label="Close"></button>
+              <div class="modal-body d-flex justify-content-center align-items-center p-0 position-relative" 
+                  style="min-height: 70vh;">
+                <div id="imageContainer" class="position-relative d-flex justify-content-center align-items-center"
+                    style="max-width: 90vw; max-height: 70vh;">
+                  <img id="photoModalImg" class="img-fluid rounded-lg shadow-2xl" 
+                      style="object-fit: contain; max-width: 100%; max-height: 100%;">
+                  <button type="button" 
+                          class="btn-close position-absolute top-0 end-0 m-3 bg-dark bg-opacity-75 rounded-circle p-2 border border-white border-opacity-25" 
+                          data-bs-dismiss="modal" 
+                          aria-label="Close"
+                          style="width: 20px; height: 20px; backdrop-filter: blur(2px);">
+                    <span class="visually-hidden">Закрыть</span>
+                  </button>
+                </div>
+                
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Info Column -->
+      <!-- Колонка инфы -->
       <div class="flex flex-col justify-center">
         <div class="profile-view" id="profileView">
           <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2" th:text="${user.getName()}">Имя</h1>
@@ -94,7 +106,7 @@
           </div>
         </div>
 
-        <!-- Edit Form -->
+        <!-- Форма редактирования -->
         <form th:action="@{/account/update}" method="post" enctype="multipart/form-data" class="profile-edit d-none" id="profileEdit">
           <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
           <div class="space-y-4">
@@ -139,7 +151,7 @@
   </div>
 </div>
 
-<!-- Posts Section -->
+<!-- Секция постов -->
 <div class="container mx-auto px-4 py-8 max-w-6xl">
   <div class="bg-white rounded-xl shadow-lg overflow-hidden p-6 mb-8">
     <h2 class="text-2xl font-bold text-gray-800 mb-4">Создать новый пост</h2>
@@ -179,7 +191,7 @@
 
   <h2 class="text-2xl font-bold text-gray-800 mb-6">Мои посты</h2>
   
-  <!-- Post Items -->
+  <!-- Посты -->
   <div id="postsContainer" class="space-y-6">
     <div th:each="post : ${posts}" class="post-item bg-white rounded-xl shadow-lg overflow-hidden">
       <img th:src="@{${post.photoPath}}" alt="Post image" class="w-full h-64 object-cover cursor-pointer">
@@ -248,7 +260,7 @@
                 <span>Комментировать</span>
             </button>
         </div>
-        <!-- Comments Section -->
+        <!-- Секция комментов -->
         <div class="mt-4 space-y-3 comments-section" th:data-post-id="${post.id}" th:data-total-comments="${postCommentsCount[post.id]}">
           <div th:each="comment : ${postComments[post.id]}" class="flex" th:data-comment-id="${comment.id}">
               <img th:src="@{${comment.user.photoPath}}" alt="Commenter" class="w-8 h-8 object-cover rounded-full mr-3 cursor-pointer">
@@ -261,7 +273,6 @@
                   </div>
                   <p class="text-sm mt-1 break-words" th:text="${comment.content}">Комментарий</p>
 
-                  <!-- Кнопка удалить видна только если комментарий текущего пользователя -->
                    <div class="absolute bottom-1 right-3">
                       <button th:if="${comment.user.id != user.id}" 
                               class="text-secondary text-xs text-hover-dark answer-comment-btn">
@@ -280,7 +291,7 @@
       <button class="show-more-comments-btn mt-3" th:data-post-id="${post.id}" 
         th:if="${postCommentsCount[post.id] > 3}">Показать еще</button>
         
-        <!-- Add Comment Form -->
+        <!-- Добавление коммента -->
         <form class="mt-4 flex add-comment-form" th:data-post-id="${post.id}">
             <input type="text"  id="comment-input" name="content" placeholder="Напишите комментарий..." 
                   class="flex-1 px-4 py-2 rounded-l-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-sm"
@@ -304,7 +315,7 @@
   </div>
 </div>
 
-<!-- Toast Notification -->
+<!-- Тост -->
 <div class="position-fixed bottom-4 right-4 z-50">
   <div th:if="${toastMessage}" class="toast show bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center" role="alert">
     <span th:text="${toastMessage}" class="mr-4"></span>

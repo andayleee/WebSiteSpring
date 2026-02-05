@@ -39,7 +39,7 @@ public class AdminController {
         List<MainPageItem> items = mainPageItemRepository.findAll();
         model.addAttribute("items", items);
         model.addAttribute("activePage", "adminPage");
-        return "adminPage"; // adminPage.html
+        return "adminPage";
     }
     
     @PostMapping("/admin/page/add")
@@ -48,32 +48,26 @@ public class AdminController {
                         @RequestParam("description") String description) throws IOException {
 
         if (photo != null && !photo.isEmpty()) {
-            // Проверяем размер файла (максимум 20MB)
             if (photo.getSize() > 20 * 1024 * 1024) {
                 throw new MaxUploadSizeExceededException(20 * 1024 * 1024);
             }
 
-            // Уникальное имя файла с расширением .jpg
             String filename = UUID.randomUUID() + ".jpg";
 
-            // Путь к папке для mainPageItem
             Path uploadDir = Paths.get(uploadProperties.getBasePath(), "images", "mainPageItem");
             Files.createDirectories(uploadDir);
 
             Path uploadPath = uploadDir.resolve(filename);
 
-            // Считываем исходное изображение
             BufferedImage original = ImageIO.read(photo.getInputStream());
 
-            // Сохраняем миниатюру в исходных пропорциях
             Thumbnails.of(original)
-                    .size(original.getWidth(), original.getHeight()) // сохраняем пропорции
+                    .size(original.getWidth(), original.getHeight())
                     .outputFormat("jpg")
                     .toFile(uploadPath.toFile());
 
-            // Создаём объект MainPageItem
             MainPageItem item = new MainPageItem();
-            item.setPhotoPath("/images/mainPageItem/" + filename); // путь к миниатюре
+            item.setPhotoPath("/images/mainPageItem/" + filename);
             item.setTitle(title);
             item.setDescription(description);
 
@@ -102,7 +96,6 @@ public class AdminController {
     @PostMapping("/admin/page/delete")
     public String deleteItem(@RequestParam("id") Long id) {
         mainPageItemRepository.findById(id).ifPresent(item -> {
-            // Удаляем файл с диска
             Path filePath = Paths.get(uploadProperties.getBasePath(), item.getPhotoPath().replaceFirst("/", ""));
             try { Files.deleteIfExists(filePath); } catch (IOException ignored) {}
             mainPageItemRepository.delete(item);

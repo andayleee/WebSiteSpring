@@ -13,7 +13,6 @@ public class UserDTO {
         this.photoPath = user.getPhotoPath();
     }
 
-    // Геттеры (сеттеры обычно не нужны для DTO, если только не планируешь изменять)
     public Long getId() {
         return id;
     }

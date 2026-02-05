@@ -15,7 +15,7 @@ public class Post {
     private Long id;
 
     @Column(nullable = false)
-    private String photoPath; // путь до фото поста
+    private String photoPath; 
 
     @Column(nullable = false)
     @Size(max = 250, message = "Заголовок не должен превышать 250 символов")
@@ -28,21 +28,17 @@ public class Post {
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
-    // Внешний ключ на пользователя
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // Комментарии к посту
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("createdAt ASC")
     private List<Comment> comments = new ArrayList<>();
 
-    // Лайки к посту
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Like> likes = new ArrayList<>();
 
-    // Конструкторы
     public Post() {}
 
     public Post(String photoPath, String title, String description, User user) {
@@ -57,7 +53,6 @@ public class Post {
         this.createdAt = LocalDateTime.now();
     }
 
-    // Геттеры и сеттеры
     public Long getId() { return id; }
 
     public String getPhotoPath() { return photoPath; }
@@ -80,7 +75,6 @@ public class Post {
     public List<Like> getLikes() { return likes; }
     public void setLikes(List<Like> likes) { this.likes = likes; }
 
-    // --- Методы для лайков ---
     public boolean isLikedBy(User user) {
         if (user == null) return false;
         return likes.stream().anyMatch(like -> like.getUser().getId().equals(user.getId()));

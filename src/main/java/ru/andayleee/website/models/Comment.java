@@ -28,7 +28,6 @@ public class Comment {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // Конструкторы
     public Comment() {}
 
     public Comment(String content, Post post, User user) {
@@ -48,7 +47,6 @@ public class Comment {
         updatedAt = LocalDateTime.now();
     }
 
-    // Геттеры и сеттеры
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

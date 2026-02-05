@@ -10,13 +10,12 @@ import java.util.List;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
-    // Найти все посты конкретного пользователя
     List<Post> findByUserId(Long userId);
 
-    // Найти все посты конкретного пользователя от новых к старым
     List<Post> findByUserIdOrderByCreatedAtDesc(Long userId);
 
-    // Найти посты по заголовку (пример поиска)
+    List<Post> findAllByOrderByCreatedAtDesc();
+
     List<Post> findByTitleContainingIgnoreCase(String title);
 
     Page<Post> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);

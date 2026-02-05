@@ -11,10 +11,8 @@ import java.util.Optional;
 
 @Repository
 public interface LikeRepository extends CrudRepository<Like, Long> {
-    // Найти все лайки конкретного поста
     List<Like> findByPostId(Long postId);
 
-    // Найти лайк конкретного пользователя для конкретного поста
     Optional<Like> findByPostAndUser(Post post, User user);
     int countByPost(Post post);
 }

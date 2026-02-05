@@ -23,14 +23,12 @@ public class RegistrationController {
         this.passwordEncoder = passwordEncoder;
     }
 
-    // ====== ОТКРЫТИЕ СТРАНИЦЫ ======
     @GetMapping("/registration")
     public String registration(Model model) {
         model.addAttribute("registerRequest", new RegisterRequest());
         return "registrationPage";
     }
 
-    // ====== ОБРАБОТКА ФОРМЫ ======
     @PostMapping("/register")
     public String register(@ModelAttribute RegisterRequest registerRequest, Model model) {
 
@@ -71,7 +69,6 @@ public class RegistrationController {
         user.setDescription("");
         userRepository.save(user);
 
-        // 4. После успешной регистрации — на логин
         return "redirect:/login";
     }
 }

@@ -14,10 +14,10 @@
       height: 100%;
       margin: 0;
       padding: 0;
-      background: #f3f4f6; /* светло-серый фон, можно заменить */
+      background: #f3f4f6;
     }
     .container-fluid {
-      min-height: 100%; /* чтобы flex центрировал по высоте всей страницы */
+      min-height: 100%;
     }
   </style>
 </head>
@@ -67,12 +67,10 @@
                         <img th:src="${item.photoPath}" th:alt="${item.title}" style="max-height:100px; object-fit:cover;">
                     </td>
 
-                    <!-- Заголовок -->
                     <td class="px-1 flex-grow-1">
                         <input type="text" name="title" th:value="${item.title}" class="form-control form-control-sm w-100" />
                     </td>
 
-                    <!-- Описание -->
                     <td class="px-1 flex-grow-1">
                         <input type="text" name="description" th:value="${item.description}" class="form-control form-control-sm w-100" />
                     </td>

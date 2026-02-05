@@ -10,20 +10,15 @@ import java.util.List;
 
 @Repository
 public interface CommentRepository extends CrudRepository<Comment, Long> {
-    // Найти все комментарии к конкретному посту
     List<Comment> findByPostId(Long postId);
 
-    // Найти все комментарии к конкретному посту от новых к старым
     List<Comment> findByPostIdOrderByCreatedAtDesc(Long postId);
 
-    // Поддержка пагинации через Spring Data Page
     List<Comment> findByPostIdOrderByCreatedAtDesc(Long postId, Pageable pageable);
 
     Page<Comment> findByPostId(Long postId, Pageable pageable);
 
-    // Подсчет количества комментариев для поста
     long countByPostId(Long postId);
 
-    // Найти все комментарии конкретного пользователя
     List<Comment> findByUserId(Long userId);
 }

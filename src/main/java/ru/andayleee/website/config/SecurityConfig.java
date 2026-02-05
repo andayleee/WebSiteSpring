@@ -18,7 +18,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/register") // отключаем CSRF для регистрации
+                .ignoringRequestMatchers("/register") 
             )
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(

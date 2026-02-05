@@ -83,6 +83,8 @@ public class AccountController {
                 formatted = duration.toHours() + " ч назад";
             } else if (duration.toDays() <= 7) {
                 formatted = duration.toDays() + " д назад";
+            } else if (duration.toDays() <=30){
+                formatted = "Месяц назад";
             } else {
                 formatted = post.getCreatedAt().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
             }
@@ -152,14 +154,12 @@ public class AccountController {
                     return new RuntimeException("Пользователь не найден");
                 });
 
-        // Проверка на дубликат email
         Optional<User> existingUserOpt = userRepository.findByEmail(updatedUser.getEmail());
         if (existingUserOpt.isPresent() && !existingUserOpt.get().getId().equals(user.getId())) {
             redirectAttributes.addFlashAttribute("toastMessage", "Такой логин уже занят!");
             return "redirect:/account";
         }
 
-        // Валидация полей
         if (bindingResult.hasErrors()) {
             model.addAttribute("user", updatedUser);
             model.addAttribute("toastMessage", "Ошибка: Превышен лимит символов!");
@@ -171,7 +171,6 @@ public class AccountController {
         List<Post> posts = postRepository.findByUserIdOrderByCreatedAtDesc(user.getId());
         Map<Long, String> postTimes = calculatePostTimes(posts);
 
-        // Обновляем обычные поля
         user.setName(updatedUser.getName());
         user.setEmail(updatedUser.getEmail());
         user.setDescription(updatedUser.getDescription());
@@ -181,7 +180,7 @@ public class AccountController {
         // --- Загрузка фото ---
         try {
             if (photo != null && !photo.isEmpty()) {
-                if (photo.getSize() > 20 * 1024 * 1024) { // максимум 20MB
+                if (photo.getSize() > 20 * 1024 * 1024) { 
                     throw new MaxUploadSizeExceededException(20 * 1024 * 1024);
                 }
 
@@ -218,14 +217,13 @@ public class AccountController {
             model.addAttribute("posts", posts);
             model.addAttribute("postTimes", postTimes);
             model.addAttribute("user", user);
-            model.addAttribute("toastMessage", e.getMessage()); // здесь будет "Такой логин уже занят!"
+            model.addAttribute("toastMessage", e.getMessage());
             model.addAttribute("activePage", "account");
             return "account";
         }
 
         userRepository.save(user);
 
-        // Обновляем Authentication если email изменился
         UserDetails newUserDetails = org.springframework.security.core.userdetails.User
                 .withUsername(user.getEmail())
                 .password(user.getPassword())
@@ -276,7 +274,6 @@ public class AccountController {
                 .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
 
         try {
-            // Проверка изображения
             if (image == null || image.isEmpty()) {
                 List<Post> posts = postRepository.findByUserIdOrderByCreatedAtDesc(user.getId());
                 Map<Long, String> postTimes = calculatePostTimes(posts);
@@ -287,7 +284,7 @@ public class AccountController {
                 return "account";
             }
 
-            if (image.getSize() > 20 * 1024 * 1024) { // максимум 20MB
+            if (image.getSize() > 20 * 1024 * 1024) { 
                 List<Post> posts = postRepository.findByUserIdOrderByCreatedAtDesc(user.getId());
                 Map<Long, String> postTimes = calculatePostTimes(posts);
                 model.addAttribute("posts", posts);
@@ -297,13 +294,11 @@ public class AccountController {
                 return "account";
             }
 
-            // Генерируем уникальное имя файла
             String filename = UUID.randomUUID() + ".jpg";
             Path uploadDir = Paths.get(uploadProperties.getBasePath(), "images", "posts");
             Files.createDirectories(uploadDir);
             Path uploadPath = uploadDir.resolve(filename);
 
-            // Сохраняем изображение
             BufferedImage original = ImageIO.read(image.getInputStream());
             Thumbnails.of(original)
                     .size(original.getWidth(), original.getHeight())
@@ -312,10 +307,8 @@ public class AccountController {
 
             String relativePath = "/images/posts/" + filename;
 
-            // Создаём пост
             Post post = new Post(relativePath, title, description, user);
 
-            // Сохраняем пост с проверкой валидности
             try {
                 postRepository.save(post);
             } catch (jakarta.validation.ConstraintViolationException e) {
@@ -361,13 +354,11 @@ public class AccountController {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Пост не найден"));
 
-        // Проверяем, что пост принадлежит текущему пользователю
         if (!post.getUser().getId().equals(user.getId())) {
             model.addAttribute("toastMessage", "Нельзя удалить чужой пост!");
             return "redirect:/account";
         }
 
-        // Удаляем файл изображения
         Path imagePath = Paths.get(uploadProperties.getBasePath(), "images", "posts", Paths.get(post.getPhotoPath()).getFileName().toString());
         try {
             Files.deleteIfExists(imagePath);
@@ -376,7 +367,6 @@ public class AccountController {
             return "redirect:/account";
         }
 
-        // Удаляем запись из базы
         postRepository.delete(post);
         return "redirect:/account";
     }
@@ -419,7 +409,6 @@ public class AccountController {
             return ResponseEntity.status(403).body(response);
         }
 
-        // Валидация
         if (title == null || title.isBlank() || title.length() > 250) {
             response.put("success", false);
             response.put("toastMessage", "Заголовок не может быть пустым или длиннее 250 символов");

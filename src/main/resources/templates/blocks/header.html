@@ -22,6 +22,7 @@
     font-size: 1.5rem;
     color: #333;
     text-decoration: none;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   }
   .nav-links {
     display: flex;
@@ -31,6 +32,7 @@
     color: #555;
     text-decoration: none;
     transition: color 0.3s;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   }
   .nav-link:hover {
     color: #000;
@@ -45,16 +47,20 @@
   <body>
       <nav>
           <div class="nav-container">
-          <a th:href="@{/}" class="logo">Pixel Gallery</a>
-          <div class="nav-links">
-              <a sec:authorize="isAuthenticated()" th:href="@{/users}" class="nav-link">Пользователи</a>
-              <a sec:authorize="isAuthenticated()" th:href="@{/account}" class="nav-link">Аккаунт</a>
-              <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/page}" class="nav-link">Админка</a>
-              <a sec:authorize="isAnonymous()" th:href="@{/login}" class="nav-link">Войти</a>
-              <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post">
-                <button type="submit" class="nav-link">Выйти</button>
-              </form>
-          </div>
+            <div class="nav-links">
+              <a th:href="@{/}" class="logo">Pixel Gallery</a>
+              <p sec:authorize="isAuthenticated()" class="logo">|</p>
+              <a sec:authorize="isAuthenticated()" th:href="@{/users/posts}" class="logo">МемоЛента</a>
+            </div>
+            <div class="nav-links">
+                <a sec:authorize="isAuthenticated()" th:href="@{/users}" class="nav-link">Пользователи</a>
+                <a sec:authorize="isAuthenticated()" th:href="@{/account}" class="nav-link">Аккаунт</a>
+                <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/page}" class="nav-link">Админка</a>
+                <a sec:authorize="isAnonymous()" th:href="@{/login}" class="nav-link">Войти</a>
+                <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post">
+                  <button type="submit" class="nav-link">Выйти</button>
+                </form>
+            </div>
           </div>
       </nav>
   </body>

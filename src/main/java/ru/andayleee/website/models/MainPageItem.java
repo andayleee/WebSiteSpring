@@ -12,7 +12,7 @@ public class MainPageItem {
     private Long id;
 
     @Column(nullable = false)
-    private String photoPath; // путь к картинке
+    private String photoPath; 
 
     @Column(nullable = false)
     @Size(max = 250)
@@ -30,7 +30,6 @@ public class MainPageItem {
         this.description = description;
     }
 
-    // Геттеры и сеттеры
     public Long getId() { return id; }
     public String getPhotoPath() { return photoPath; }
     public void setPhotoPath(String photoPath) { this.photoPath = photoPath; }

@@ -5,18 +5,15 @@ public class RegisterRequest {
     private String password;
     private String accessKey;
 
-    // Конструктор по умолчанию
     public RegisterRequest() {
     }
 
-    // Полный конструктор
     public RegisterRequest(String email, String password, String accessKey) {
         this.email = email;
         this.password = password;
         this.accessKey = accessKey;
     }
 
-    // Геттеры и сеттеры
     public String getEmail() {
         return email;
     }
