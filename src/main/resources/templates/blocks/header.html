@@ -53,13 +53,10 @@
               <a sec:authorize="isAuthenticated()" th:href="@{/users/posts}" class="logo">МемоЛента</a>
             </div>
             <div class="nav-links">
+                <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/page}" class="nav-link">Админка</a>
                 <a sec:authorize="isAuthenticated()" th:href="@{/users}" class="nav-link">Пользователи</a>
                 <a sec:authorize="isAuthenticated()" th:href="@{/account}" class="nav-link">Аккаунт</a>
-                <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/page}" class="nav-link">Админка</a>
                 <a sec:authorize="isAnonymous()" th:href="@{/login}" class="nav-link">Войти</a>
-                <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post">
-                  <button type="submit" class="nav-link">Выйти</button>
-                </form>
             </div>
           </div>
       </nav>

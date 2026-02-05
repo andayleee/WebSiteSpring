@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     const editBtn = document.getElementById('editProfileBtn');
+    const logOutBtn = document.getElementById('logOutBtn');
     const cancelBtn = document.getElementById('cancelEditBtn');
     const profileView = document.getElementById('profileView');
     const profileEdit = document.getElementById('profileEdit');
@@ -145,12 +146,14 @@ document.addEventListener('DOMContentLoaded', function() {
             profileView.classList.add('d-none');
             profileEdit.classList.remove('d-none');
             editBtn.classList.add('d-none');
+            logOutBtn.classList.add('d-none');
         });
 
         cancelBtn.addEventListener('click', () => {
             profileView.classList.remove('d-none');
             profileEdit.classList.add('d-none');
             editBtn.classList.remove('d-none');
+            logOutBtn.classList.remove('d-none');
         });
     }
 

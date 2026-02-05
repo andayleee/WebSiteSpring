@@ -44,18 +44,35 @@
 <div th:replace="~{blocks/header :: header}"></div>
 
 <div class="container mx-auto px-4 py-8 max-w-6xl">
+  <!-- Модалка фото -->
+  <div class="modal fade overflow-hidden" id="photoModal" tabindex="-1" aria-labelledby="photoModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-xl" style="margin-top: 1rem; margin-bottom: 1rem;">
+          <div class="modal-content bg-transparent border-0 position-relative">
+              <div class="modal-body d-flex justify-content-center align-items-center p-0 position-relative">
+                  <div id="imageContainer" class="position-relative d-flex justify-content-center align-items-center min-vh-75 max-vh-75">
+                  <img id="photoModalImg" class="img-fluid rounded-lg" 
+                      style="object-fit: contain; max-height: 85vh; min-height: 70vh;">
+                  <button type="button" class="btn-close btn-close-white position-absolute top-3 end-3 bg-white rounded-full p-2" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  
+              </div>
+          </div>
+      </div>
+  </div>
     <!-- Секция постов -->
   <div id="postsContainer" class="space-y-6">
     <div th:each="post : ${posts}" class="post-item bg-white rounded-xl shadow-lg overflow-hidden">
       <div class="d-flex justify-content-center w-100">
-        <img th:src="@{${post.photoPath}}" alt="Post image" class="object-cover cursor-pointer" style="max-height: 500px; min-height: 400px;">
+        <img th:src="@{${post.photoPath}}" alt="Post image" class="object-fit-contain cursor-pointer" style="max-height: 500px; min-height: 400px;">
       </div>
       <div class="p-6">
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center">
             <img th:src="@{${post.user.photoPath}}" alt="User" class="w-10 h-10 object-cover rounded-full mr-3 cursor-pointer">
             <div>
-              <h3 class="font-bold text-gray-800" th:text="${post.user.name}">Имя</h3>
+              <a th:href="@{'/user/' + ${post.user.id}}" class="flex items-center">
+                      <span class="font-medium fw-bold text-xxl-start" th:text="${post.user.name}">Пользователь</span>
+              </a>
               <h6 class="text-sm text-gray-500" th:text="${postTimes[post.id]}"></h6>
             </div>
           </div>
@@ -74,9 +91,17 @@
             </button>
             <button class="flex items-center text-gray-500 hover:text-indigo-500">
                 <i data-feather="message-square" class="mr-2"></i>
-                <span>Комментировать</span>
             </button>
         </div>
+         <!-- Добавление комментов -->
+        <form class="mt-4 flex add-comment-form" th:data-post-id="${post.id}">
+            <input type="text" id="comment-input" name="content" placeholder="Напишите комментарий..." 
+                  class="flex-1 px-4 py-2 rounded-l-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-sm"
+                  required>
+            <button type="submit" class="bg-indigo-500 text-white px-4 py-2 rounded-r-lg hover:bg-indigo-600 transition">
+                <i data-feather="send" class="w-4 h-4"></i>
+            </button>
+        </form>
         <!-- Секция комментов -->
         <div class="mt-4 space-y-3 comments-section" th:data-post-id="${post.id}" th:data-total-comments="${postCommentsCount[post.id]}">
           <div th:each="comment : ${postComments[post.id]}" class="flex" th:data-comment-id="${comment.id}">
@@ -106,23 +131,14 @@
 
       <button class="show-more-comments-btn mt-3" th:data-post-id="${post.id}" 
         th:if="${postCommentsCount[post.id] > 3}">Показать еще</button>
-        
-        <!-- Добавление комментов -->
-        <form class="mt-4 flex add-comment-form" th:data-post-id="${post.id}">
-            <input type="text" id="comment-input" name="content" placeholder="Напишите комментарий..." 
-                  class="flex-1 px-4 py-2 rounded-l-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-sm"
-                  required>
-            <button type="submit" class="bg-indigo-500 text-white px-4 py-2 rounded-r-lg hover:bg-indigo-600 transition">
-                <i data-feather="send" class="w-4 h-4"></i>
-            </button>
-        </form>
 
       </div>
     </div>
   </div> 
 </div>
 
-<script th:src="@{/js/usersPosts.js}"></script>
+<script th:src="@{/js/profileScript.js}"></script>
+<script th:src="@{/js/profileAddCommentScript.js}"></script>
 <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
 <script>
   feather.replace();

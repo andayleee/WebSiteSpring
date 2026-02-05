@@ -154,6 +154,13 @@ document.addEventListener("DOMContentLoaded", () => {
             const commentsSection = postElement.querySelector(".comments-section");
             if (!commentsSection) return;
 
+            const visibleComments = commentsSection.querySelectorAll(".flex[data-comment-id], .comment-item");
+            
+            if (visibleComments.length >= 3) {
+                const lastComment = visibleComments[visibleComments.length - 1];
+                lastComment.remove();
+            }
+
             const commentDiv = document.createElement("div");
             commentDiv.classList.add("flex", "comment-item");
             commentDiv.dataset.commentId = data.id;
@@ -231,12 +238,16 @@ document.addEventListener("DOMContentLoaded", () => {
             const userId = userPath.split('/').pop();
             const userName = userLink.querySelector('span').textContent.trim();
             
-            const commentInput = document.getElementById('comment-input');
-            if (commentInput) {
-                commentInput.value = `@${userName}, `;
-                commentInput.focus();
-                commentInput.dataset.replyTo = userId;
-            }
+            const postItem = commentDiv.closest('.post-item');
+            if (!postItem) return;
+            const addCommentForm = postItem.querySelector('.add-comment-form');
+            if (!addCommentForm) return;
+            const commentInput = addCommentForm.querySelector('#comment-input');
+            if (!commentInput) return;
+            commentInput.value = `@${userName}, `;
+            commentInput.focus();
+            commentInput.dataset.replyTo = userId;
+            commentInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }  
     }
 
