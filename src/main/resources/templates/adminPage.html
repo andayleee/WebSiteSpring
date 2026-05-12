@@ -29,6 +29,7 @@
 
     <!-- Форма добавления -->
     <form th:action="@{/admin/page/add}" method="post" enctype="multipart/form-data" class="mb-4">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
         <div class="mb-3">
             <label>Фото:</label>
             <input type="file" name="photo" class="form-control" required>

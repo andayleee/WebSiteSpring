@@ -22,6 +22,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -50,6 +51,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 public class AccountController {
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
     private UserRepository userRepository;
@@ -262,12 +266,11 @@ public class AccountController {
             @RequestParam("image") MultipartFile image,
             @RequestParam("postCaption") String title,
             @RequestParam("postDescription") String description,
-            Model model
-    ) {
+            RedirectAttributes redirectAttributes) throws IOException {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || auth.getName() == null) {
-            model.addAttribute("toastMessage", "Ошибка: пользователь не авторизован!");
-            return "account";
+            redirectAttributes.addAttribute("toastMessage", "Ошибка: пользователь не авторизован!");
+            return "redirect:/account";
         }
 
         User user = userRepository.findByEmail(auth.getName())
@@ -275,23 +278,31 @@ public class AccountController {
 
         try {
             if (image == null || image.isEmpty()) {
-                List<Post> posts = postRepository.findByUserIdOrderByCreatedAtDesc(user.getId());
-                Map<Long, String> postTimes = calculatePostTimes(posts);
-                model.addAttribute("posts", posts);
-                model.addAttribute("postTimes", postTimes);
-                model.addAttribute("toastMessage", "Пожалуйста, выберите изображение!");
-                model.addAttribute("user", user);
-                return "account";
+                if ((title == null || title.isEmpty())&&(description == null || description.isEmpty())){
+                    redirectAttributes.addFlashAttribute("toastMessage", "Пост не может быть пустым!");
+                    redirectAttributes.addFlashAttribute("toastType", "error");
+                    return "redirect:/account";
+                }
+                String relativePath = "";
+                Post post = new Post(relativePath, title, description, user);
+                try {
+                    postRepository.save(post);
+                    redirectAttributes.addAttribute("toastMessage", "Пост успешно создан!");
+                    return "redirect:/account";
+                } catch (jakarta.validation.ConstraintViolationException e) {
+                    String errorMessage = e.getConstraintViolations()
+                            .stream()
+                            .map(violation -> violation.getMessage())
+                            .findFirst()
+                            .orElse("Ошибка валидации поста!");
+                    redirectAttributes.addAttribute("toastMessage", errorMessage);
+                    return "redirect:/account";
+                }
             }
 
             if (image.getSize() > 20 * 1024 * 1024) { 
-                List<Post> posts = postRepository.findByUserIdOrderByCreatedAtDesc(user.getId());
-                Map<Long, String> postTimes = calculatePostTimes(posts);
-                model.addAttribute("posts", posts);
-                model.addAttribute("postTimes", postTimes);
-                model.addAttribute("toastMessage", "Файл слишком большой! Максимум 20MB.");
-                model.addAttribute("user", user);
-                return "account";
+                redirectAttributes.addAttribute("toastMessage", "Файл слишком большой! Максимум 20MB.");
+                return "redirect:/account";
             }
 
             String filename = UUID.randomUUID() + ".jpg";
@@ -317,26 +328,16 @@ public class AccountController {
                         .map(violation -> violation.getMessage())
                         .findFirst()
                         .orElse("Ошибка валидации поста!");
-                List<Post> posts = postRepository.findByUserIdOrderByCreatedAtDesc(user.getId());
-                Map<Long, String> postTimes = calculatePostTimes(posts);
-                model.addAttribute("posts", posts);
-                model.addAttribute("postTimes", postTimes);
-                model.addAttribute("toastMessage", errorMessage);
-                model.addAttribute("user", user);
-                return "account";
+                redirectAttributes.addAttribute("toastMessage", errorMessage);
+                return "redirect:/account";
             }
 
         } catch (IOException e) {
-            List<Post> posts = postRepository.findByUserIdOrderByCreatedAtDesc(user.getId());
-            Map<Long, String> postTimes = calculatePostTimes(posts);
-            model.addAttribute("posts", posts);
-            model.addAttribute("postTimes", postTimes);
-            model.addAttribute("toastMessage", "Ошибка при загрузке изображения!");
-            model.addAttribute("user", user);
-            return "account";
+            redirectAttributes.addAttribute("toastMessage", "Ошибка при загрузке изображения!");
+            return "redirect:/account";
         }
 
-        model.addAttribute("toastMessage", "Пост успешно создан!");
+        redirectAttributes.addAttribute("toastMessage", "Пост успешно создан!");
         return "redirect:/account";
     }
 
@@ -358,14 +359,18 @@ public class AccountController {
             model.addAttribute("toastMessage", "Нельзя удалить чужой пост!");
             return "redirect:/account";
         }
+        String photoPath = post.getPhotoPath();
 
-        Path imagePath = Paths.get(uploadProperties.getBasePath(), "images", "posts", Paths.get(post.getPhotoPath()).getFileName().toString());
-        try {
-            Files.deleteIfExists(imagePath);
-        } catch (IOException e) {
-            model.addAttribute("toastMessage", "Ошибка при удалении изображения!");
-            return "redirect:/account";
+        if (photoPath != null && !photoPath.isEmpty()){
+            Path imagePath = Paths.get(uploadProperties.getBasePath(), "images", "posts", Paths.get(post.getPhotoPath()).getFileName().toString());
+            try {
+                Files.deleteIfExists(imagePath);
+            } catch (IOException e) {
+                model.addAttribute("toastMessage", "Ошибка при удалении изображения!");
+                return "redirect:/account";
+            }
         }
+        
 
         postRepository.delete(post);
         return "redirect:/account";
@@ -409,9 +414,9 @@ public class AccountController {
             return ResponseEntity.status(403).body(response);
         }
 
-        if (title == null || title.isBlank() || title.length() > 250) {
+        if (title.length() > 250) {
             response.put("success", false);
-            response.put("toastMessage", "Заголовок не может быть пустым или длиннее 250 символов");
+            response.put("toastMessage", "Заголовок не может быть длиннее 250 символов");
             return ResponseEntity.badRequest().body(response);
         }
 
@@ -429,6 +434,27 @@ public class AccountController {
         response.put("title", post.getTitle());
         response.put("description", post.getDescription());
 
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/account/password/update")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> updatePost(
+            @RequestParam("pass1") String newPass
+    ) {
+        Map<String, Object> response = new HashMap<>();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || auth.getName() == null) {
+            response.put("success", false);
+            return ResponseEntity.ok(response);
+        }
+
+        User user = userRepository.findByEmail(auth.getName())
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+        
+        user.setPassword(passwordEncoder.encode(newPass));
+        userRepository.save(user);
+        response.put("success", true);
         return ResponseEntity.ok(response);
     }
 }

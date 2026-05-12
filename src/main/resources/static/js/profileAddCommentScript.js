@@ -1,30 +1,19 @@
 document.addEventListener("DOMContentLoaded", () => {
+    const toastEl = document.getElementById('fileSizeToast');
+    const bsToast = toastEl ? new bootstrap.Toast(toastEl, { delay: 3000 }) : null;
 
     // ----------------------
     // Показ тоста
     // ----------------------
     function showToast(message) {
-        let toastContainer = document.querySelector(".position-fixed.bottom-4.right-4");
-        if (!toastContainer) {
-            toastContainer = document.createElement("div");
-            toastContainer.className = "position-fixed bottom-4 right-4 z-50";
-            document.body.appendChild(toastContainer);
-        }
-
-        const toast = document.createElement("div");
-        toast.className = "toast show bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center";
-        toast.role = "alert";
-        toast.innerHTML = `
-            <span class="mr-4">${message}</span>
-            <button type="button" class="ml-auto text-white hover:text-gray-200 close-toast-btn" aria-label="Close">
-                <i data-feather="x"></i>
-            </button>
-        `;
-        toastContainer.appendChild(toast);
-        feather.replace();
-
-        setTimeout(() => toast.remove(), 5000);
-        toast.querySelector(".close-toast-btn").addEventListener("click", () => toast.remove());
+        if (message) {
+                if (bsToast && toastEl) {
+                    toastEl.querySelector('.toast-body').textContent = message;
+                    toastEl.classList.remove('text-bg-success');
+                    toastEl.classList.add('text-bg-danger');
+                    bsToast.show();
+                }
+            }
     }
     // ----------------------
     //  Показ формы редактирования поста 
@@ -62,7 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // ----------------------
-    //  Сохранение изменений через ajax редактирования поста
+    //  Сохранение изменений редактирования поста
     // ----------------------
     document.querySelectorAll(".edit-post-form").forEach(form => {
         form.addEventListener("submit", async e => {
@@ -72,46 +61,50 @@ document.addEventListener("DOMContentLoaded", () => {
             const title = form.querySelector("input[name='title']").value.trim();
             const description = form.querySelector("textarea[name='description']").value.trim();
 
-            const token = document.querySelector('meta[name="_csrf"]').content;
-            const header = document.querySelector('meta[name="_csrf_header"]').content;
+            if (title.replaceAll(' ','').length == 0 && description.replaceAll(' ','').length == 0){
+                showToast("Необходимо заполнить хотя бы одно поле!");
+            } else{
+                const token = document.querySelector('meta[name="_csrf"]').content;
+                const header = document.querySelector('meta[name="_csrf_header"]').content;
 
-            try {
-                const response = await fetch("/account/posts/update", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/x-www-form-urlencoded",
-                        [header]: token
-                    },
-                    body: new URLSearchParams({ postId, title, description })
-                });
+                try {
+                    const response = await fetch("/account/posts/update", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded",
+                            [header]: token
+                        },
+                        body: new URLSearchParams({ postId, title, description })
+                    });
 
-                const data = await response.json();
+                    const data = await response.json();
 
-                if (!data.success) {
-                    showToast(data.toastMessage || "Ошибка при обновлении поста");
-                    return;
+                    if (!data.success) {
+                        showToast(data.toastMessage || "Ошибка при обновлении поста");
+                        return;
+                    }
+
+                    const postItem = form.closest(".post-item");
+
+                    const titleEl = postItem.querySelector("h4");
+                    if (titleEl) {
+                        titleEl.textContent = data.title;
+                        titleEl.classList.remove("hidden");
+                    }
+
+                    const descSpan = postItem.querySelector(".post-description");
+                    if (descSpan) {
+                        descSpan.innerText = data.description;
+                        const descP = descSpan.closest("p");
+                        if (descP) descP.classList.remove("hidden");
+                    }
+
+                    form.classList.add("hidden");
+
+                } catch (err) {
+                    console.error(err);
+                    showToast("Ошибка при обновлении поста");
                 }
-
-                const postItem = form.closest(".post-item");
-
-                const titleEl = postItem.querySelector("h4");
-                if (titleEl) {
-                    titleEl.textContent = data.title;
-                    titleEl.classList.remove("hidden");
-                }
-
-                const descSpan = postItem.querySelector(".post-description");
-                if (descSpan) {
-                    descSpan.innerText = data.description;
-                    const descP = descSpan.closest("p");
-                    if (descP) descP.classList.remove("hidden");
-                }
-
-                form.classList.add("hidden");
-
-            } catch (err) {
-                console.error(err);
-                showToast("Ошибка при обновлении поста");
             }
         });
     });
@@ -123,12 +116,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const postId = form.dataset.postId;
         const contentInput = form.querySelector('input[name="content"]');
         const content = contentInput.value.trim();
-        if (!content) return;
 
         const token = document.querySelector('meta[name="_csrf"]').content;
         const header = document.querySelector('meta[name="_csrf_header"]').content;
 
-        if (!content) {
+        if (!content || content.replaceAll(' ', '').length == 0) {
             showToast("Комментарий не может быть пустым!");
             return;
         }
@@ -170,7 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 : '';
 
             commentDiv.innerHTML = `
-                <img src="${data.userPhoto}" alt="Commenter" class="w-8 h-8 object-cover rounded-full mr-3">
+                <img src="${data.userPhoto}" id="userPostPhoto" alt="Commenter" class="w-8 h-8 object-cover rounded-full mr-3">
                 <div class="bg-gray-50 p-3 rounded-lg flex-1 relative">
                     <div class="flex items-center justify-between">
                         <span class="font-medium fw-bold text-sm">${data.userName}</span>
@@ -282,7 +274,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     commentDiv.classList.add("flex");
                     commentDiv.dataset.commentId = comment.id;
                     htmlText = `
-                        <img src="${comment.userPhoto}" alt="Commenter" class="w-8 h-8 object-cover rounded-full mr-3">
+                        <img src="${comment.userPhoto}" id="userPostPhoto" alt="Commenter" class="w-8 h-8 object-cover rounded-full mr-3">
                         <div class="bg-gray-50 p-3 rounded-lg flex-1 relative">
                             <div class="flex items-center justify-between">
                                 <a href="/user/${comment.idCommentUser}" class="flex items-center">
@@ -322,7 +314,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-     // ----------------------
+    // ----------------------
     // Лайки
     // ----------------------
     

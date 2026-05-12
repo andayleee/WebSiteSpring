@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <img src="${src}" 
                         id="lightboxImg"
                         class="block max-h-[80vh] w-auto mx-auto"
-                        style="object-fit: contain;">
+                        style="object-fit: contain; max-height: 85vh; min-height: 70vh;">
                 </div>
 
                 <!-- Блок с инфо -->
@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
 
                 <!-- Кнопка закрытия -->
-                <button class="absolute top-1 left-1 text-white hover:text-gray-300 bg-black bg-opacity-50 rounded-full p-2" id="closeLightboxBtn">
+                <button class="absolute top-1 right-1 text-white hover:text-gray-300 bg-black bg-opacity-50 rounded-full p-2" id="closeLightboxBtn">
                     <i data-feather="x"></i>
                 </button>
             </div>

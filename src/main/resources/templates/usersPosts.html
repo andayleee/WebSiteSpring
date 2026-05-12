@@ -62,13 +62,16 @@
     <!-- Секция постов -->
   <div id="postsContainer" class="space-y-6">
     <div th:each="post : ${posts}" class="post-item bg-white rounded-xl shadow-lg overflow-hidden">
-      <div class="d-flex justify-content-center w-100">
-        <img th:src="@{${post.photoPath}}" alt="Post image" class="object-fit-contain cursor-pointer" style="max-height: 500px; min-height: 400px;">
+      <div class="d-flex justify-content-center w-100" th:if="${post.photoPath != null and !#strings.isEmpty(post.photoPath)}">
+          <img th:src="@{${post.photoPath}}" 
+              alt="Post image" 
+              class="object-fit-contain cursor-pointer" 
+              style="max-height: 500px; min-height: 400px;">
       </div>
       <div class="p-6">
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center">
-            <img th:src="@{${post.user.photoPath}}" alt="User" class="w-10 h-10 object-cover rounded-full mr-3 cursor-pointer">
+            <img th:src="@{${post.user.photoPath}}" id="userPostPhoto" alt="User" class="w-10 h-10 object-cover rounded-full mr-3">
             <div>
               <a th:href="@{'/user/' + ${post.user.id}}" class="flex items-center">
                       <span class="font-medium fw-bold text-xxl-start" th:text="${post.user.name}">Пользователь</span>
@@ -79,7 +82,7 @@
         </div>
         
         <h4 class="font-semibold text-lg mb-2" th:text="${post.title}">Заголовок поста</h4>
-        <p class="text-gray-600 mb-4"><span class="post-description" th:text="${post.description}">Описание поста</span></p>
+        <p class="text-gray-600 mb-4"><span class="post-description text-break whitespace-pre-line" th:text="${post.description}">Описание поста</span></p>
 
         
         <div class="flex items-center space-x-4 border-t border-gray-100 pt-4">
@@ -105,7 +108,7 @@
         <!-- Секция комментов -->
         <div class="mt-4 space-y-3 comments-section" th:data-post-id="${post.id}" th:data-total-comments="${postCommentsCount[post.id]}">
           <div th:each="comment : ${postComments[post.id]}" class="flex" th:data-comment-id="${comment.id}">
-              <img th:src="@{${comment.user.photoPath}}" alt="Commenter" class="w-8 h-8 object-cover rounded-full mr-3 cursor-pointer">
+              <img th:src="@{${comment.user.photoPath}}" id="userPostPhoto" alt="Commenter" class="w-8 h-8 object-cover rounded-full mr-3">
               <div class="bg-gray-50 p-3 rounded-lg flex-1 relative">
                   <div class="flex items-center justify-between">
                     <a th:href="@{'/user/' + ${comment.user.id}}" class="flex items-center">
@@ -137,6 +140,8 @@
   </div> 
 </div>
 
+<custom-footer></custom-footer>
+<script th:src="@{/js/components/footer.js}"></script>
 <script th:src="@{/js/profileScript.js}"></script>
 <script th:src="@{/js/profileAddCommentScript.js}"></script>
 <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>

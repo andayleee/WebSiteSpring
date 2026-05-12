@@ -14,10 +14,10 @@ public class Post {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String photoPath; 
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     @Size(max = 250, message = "Заголовок не должен превышать 250 символов")
     private String title;
 
